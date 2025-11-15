@@ -35,4 +35,20 @@ export const authService = {
     
     return { token, user };
   },
+
+  async updateProfile(data: { name?: string; phone?: string; address?: string }): Promise<ApiResponse<User>> {
+    const response = await api.put('/users/me', data);
+    return response.data;
+  },
+
+  async uploadAvatar(file: File): Promise<ApiResponse<{ avatarUrl: string }>> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await api.post('/users/me/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };

@@ -141,7 +141,7 @@ const changeLanguage = (lang: string) => {
             </a-button>
             <template #overlay>
               <a-menu>
-                <a-menu-item key="profile">
+                <a-menu-item key="profile" @click="router.push('/profile'); closeMobileMenu()">
                   <UserOutlined />
                   {{ $t('nav.profile') }}
                 </a-menu-item>

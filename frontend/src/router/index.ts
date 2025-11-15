@@ -8,6 +8,7 @@ import CheckoutView from "@/views/CheckoutView.vue";
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import OrderHistoryView from "@/views/OrderHistoryView.vue";
+import ProfileView from "@/views/ProfileView.vue";
 import AdminView from "@/views/AdminView.vue";
 
 const router = createRouter({
@@ -53,6 +54,12 @@ const router = createRouter({
       path: "/orders",
       name: "order-history",
       component: OrderHistoryView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/profile",
+      name: "profile",
+      component: ProfileView,
       meta: { requiresAuth: true },
     },
     {

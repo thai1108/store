@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   phone TEXT,
+  address TEXT,
+  avatarUrl TEXT,
   passwordHash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
   createdAt TEXT NOT NULL,
