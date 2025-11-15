@@ -1,38 +1,51 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";
+import { UserOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons-vue";
+import { message } from "ant-design-vue";
+import type { Rule } from "ant-design-vue/es/form";
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const form = ref({
+interface FormState {
+  email: string;
+  password: string;
+}
+
+const formState = reactive<FormState>({
   email: "",
   password: "",
 });
 
 const loading = ref(false);
-const error = ref("");
+
+const rules: Record<string, Rule[]> = {
+  email: [
+    { required: true, message: "Please input your email!", trigger: "blur" },
+    { type: "email", message: "Please enter a valid email!", trigger: "blur" },
+  ],
+  password: [
+    { required: true, message: "Please input your password!", trigger: "blur" },
+    { min: 6, message: "Password must be at least 6 characters!", trigger: "blur" },
+  ],
+};
 
 const handleSubmit = async () => {
-  if (!form.value.email || !form.value.password) {
-    error.value = "Please fill in all fields";
-    return;
-  }
-
   loading.value = true;
-  error.value = "";
 
   try {
-    const result = await authStore.login(form.value.email, form.value.password);
+    const result = await authStore.login(formState.email, formState.password);
 
     if (result.success) {
+      message.success("Login successful! Welcome back!");
       router.push("/");
     } else {
-      error.value = result.message || "Login failed";
+      message.error(result.message || "Login failed. Please try again.");
     }
   } catch (err) {
-    error.value = "An error occurred. Please try again.";
+    message.error("An error occurred. Please try again.");
   } finally {
     loading.value = false;
   }
@@ -41,53 +54,81 @@ const handleSubmit = async () => {
 
 <template>
   <div class="login-view">
-    <div class="container">
-      <div class="login-card">
-        <h1>Login</h1>
-        <p class="subtitle">Welcome back! Please sign in to your account.</p>
-
-        <div v-if="error" class="alert alert-error">
-          {{ error }}
+    <div class="login-container">
+      <a-card class="login-card fade-in" :bordered="false">
+        <div class="login-header">
+          <div class="login-icon">
+            <UserOutlined />
+          </div>
+          <h1>Welcome Back</h1>
+          <p class="subtitle">Sign in to your account to continue</p>
         </div>
 
-        <form @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label for="email">Email:</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              class="form-control"
+        <a-form
+          :model="formState"
+          :rules="rules"
+          layout="vertical"
+          @finish="handleSubmit"
+          class="login-form"
+        >
+          <a-form-item label="Email" name="email">
+            <a-input
+              v-model:value="formState.email"
+              size="large"
               placeholder="Enter your email"
-              required
-            />
-          </div>
+            >
+              <template #prefix>
+                <UserOutlined />
+              </template>
+            </a-input>
+          </a-form-item>
 
-          <div class="form-group">
-            <label for="password">Password:</label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              class="form-control"
+          <a-form-item label="Password" name="password">
+            <a-input-password
+              v-model:value="formState.password"
+              size="large"
               placeholder="Enter your password"
-              required
-            />
-          </div>
+            >
+              <template #prefix>
+                <LockOutlined />
+              </template>
+            </a-input-password>
+          </a-form-item>
 
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            <span v-if="loading" class="loading-spinner"></span>
-            <span v-else>Login</span>
-          </button>
-        </form>
+          <a-form-item>
+            <div class="form-footer">
+              <a-checkbox>Remember me</a-checkbox>
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+          </a-form-item>
 
-        <div class="login-footer">
-          <p>
-            Don't have an account?
-            <router-link to="/register">Register here</router-link>
-          </p>
+          <a-form-item>
+            <a-button
+              type="primary"
+              html-type="submit"
+              size="large"
+              :loading="loading"
+              block
+              class="login-button"
+            >
+              <LoginOutlined v-if="!loading" />
+              {{ loading ? "Logging in..." : "Login" }}
+            </a-button>
+          </a-form-item>
+        </a-form>
+
+        <a-divider>or</a-divider>
+
+        <div class="register-link">
+          <span>Don't have an account?</span>
+          <a-button type="link" @click="router.push('/register')">
+            Register now
+          </a-button>
         </div>
-      </div>
+      </a-card>
+
+      <div class="decoration-left"></div>
+      <div class="decoration-right"></div>
     </div>
   </div>
 </template>
@@ -99,48 +140,173 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 450px;
 }
 
 .login-card {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
 }
 
-.login-card h1 {
+.login-card :deep(.ant-card-body) {
+  padding: 48px 40px;
+}
+
+.login-header {
   text-align: center;
-  color: #2d3748;
-  margin-bottom: 8px;
+  margin-bottom: 40px;
+}
+
+.login-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.login-header h1 {
   font-size: 2rem;
+  font-weight: 700;
+  color: #262626;
+  margin-bottom: 8px;
 }
 
 .subtitle {
-  text-align: center;
-  color: #718096;
-  margin-bottom: 30px;
+  color: #8c8c8c;
+  font-size: 14px;
+  margin: 0;
 }
 
-.form-group {
-  margin-bottom: 20px;
+.login-form {
+  margin-top: 32px;
 }
 
-.login-footer {
-  text-align: center;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.login-footer a {
-  color: #3182ce;
-  text-decoration: none;
+.login-form :deep(.ant-form-item-label > label) {
   font-weight: 500;
+  font-size: 14px;
 }
 
-.login-footer a:hover {
+.login-form :deep(.ant-input-affix-wrapper) {
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.login-form :deep(.ant-input-password) {
+  padding: 0;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forgot-link {
+  color: #1890ff;
+  font-size: 14px;
+}
+
+.forgot-link:hover {
   text-decoration: underline;
+}
+
+.login-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.login-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.register-link {
+  text-align: center;
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+.register-link span {
+  margin-right: 4px;
+}
+
+/* Decorations */
+.decoration-left,
+.decoration-right {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 20s infinite ease-in-out;
+}
+
+.decoration-left {
+  top: -150px;
+  left: -150px;
+}
+
+.decoration-right {
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(180deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-view {
+    padding: 20px 16px;
+  }
+
+  .login-card :deep(.ant-card-body) {
+    padding: 32px 24px;
+  }
+
+  .login-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .login-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+
+  .decoration-left,
+  .decoration-right {
+    display: none;
+  }
 }
 </style>

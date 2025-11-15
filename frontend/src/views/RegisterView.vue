@@ -1,12 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";
+import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined, UserAddOutlined } from "@ant-design/icons-vue";
+import { message } from "ant-design-vue";
+import type { Rule } from "ant-design-vue/es/form";
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const form = ref({
+interface FormState {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+}
+
+const formState = reactive<FormState>({
   name: "",
   email: "",
   password: "",
@@ -14,32 +24,39 @@ const form = ref({
 });
 
 const loading = ref(false);
-const error = ref("");
+
+const rules: Record<string, Rule[]> = {
+  name: [
+    { required: true, message: "Please input your name!", trigger: "blur" },
+    { min: 2, message: "Name must be at least 2 characters!", trigger: "blur" },
+  ],
+  email: [
+    { required: true, message: "Please input your email!", trigger: "blur" },
+    { type: "email", message: "Please enter a valid email!", trigger: "blur" },
+  ],
+  password: [
+    { required: true, message: "Please input your password!", trigger: "blur" },
+    { min: 6, message: "Password must be at least 6 characters!", trigger: "blur" },
+  ],
+  phone: [
+    { pattern: /^[0-9]{10,11}$/, message: "Please enter a valid phone number!", trigger: "blur" },
+  ],
+};
 
 const handleSubmit = async () => {
-  if (!form.value.name || !form.value.email || !form.value.password) {
-    error.value = "Please fill in all required fields";
-    return;
-  }
-
-  if (form.value.password.length < 6) {
-    error.value = "Password must be at least 6 characters long";
-    return;
-  }
-
   loading.value = true;
-  error.value = "";
 
   try {
-    const result = await authStore.register(form.value);
+    const result = await authStore.register(formState);
 
     if (result.success) {
+      message.success("Registration successful! Welcome!");
       router.push("/");
     } else {
-      error.value = result.message || "Registration failed";
+      message.error(result.message || "Registration failed. Please try again.");
     }
   } catch (err) {
-    error.value = "An error occurred. Please try again.";
+    message.error("An error occurred. Please try again.");
   } finally {
     loading.value = false;
   }
@@ -48,78 +65,98 @@ const handleSubmit = async () => {
 
 <template>
   <div class="register-view">
-    <div class="container">
-      <div class="register-card">
-        <h1>Register</h1>
-        <p class="subtitle">Create your account to start ordering!</p>
-
-        <div v-if="error" class="alert alert-error">
-          {{ error }}
+    <div class="register-container">
+      <a-card class="register-card fade-in" :bordered="false">
+        <div class="register-header">
+          <div class="register-icon">
+            <UserAddOutlined />
+          </div>
+          <h1>Create Account</h1>
+          <p class="subtitle">Join us and start ordering delicious treats!</p>
         </div>
 
-        <form @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label for="name">Full Name <span class="required">*</span>:</label>
-            <input
-              id="name"
-              v-model="form.name"
-              type="text"
-              class="form-control"
+        <a-form
+          :model="formState"
+          :rules="rules"
+          layout="vertical"
+          @finish="handleSubmit"
+          class="register-form"
+        >
+          <a-form-item label="Full Name" name="name">
+            <a-input
+              v-model:value="formState.name"
+              size="large"
               placeholder="Enter your full name"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="email">Email <span class="required">*</span>:</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              class="form-control"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="phone">Phone Number:</label>
-            <input
-              id="phone"
-              v-model="form.phone"
-              type="tel"
-              class="form-control"
-              placeholder="Enter your phone number"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password"
-              >Password <span class="required">*</span>:</label
             >
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              class="form-control"
-              placeholder="Enter your password (min 6 characters)"
-              required
-            />
-          </div>
+              <template #prefix>
+                <UserOutlined />
+              </template>
+            </a-input>
+          </a-form-item>
 
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            <span v-if="loading" class="loading-spinner"></span>
-            <span v-else>Create Account</span>
-          </button>
-        </form>
+          <a-form-item label="Email" name="email">
+            <a-input
+              v-model:value="formState.email"
+              size="large"
+              placeholder="Enter your email"
+            >
+              <template #prefix>
+                <MailOutlined />
+              </template>
+            </a-input>
+          </a-form-item>
 
-        <div class="register-footer">
-          <p>
-            Already have an account?
-            <router-link to="/login">Login here</router-link>
-          </p>
+          <a-form-item label="Phone Number" name="phone">
+            <a-input
+              v-model:value="formState.phone"
+              size="large"
+              placeholder="Enter your phone number (optional)"
+            >
+              <template #prefix>
+                <PhoneOutlined />
+              </template>
+            </a-input>
+          </a-form-item>
+
+          <a-form-item label="Password" name="password">
+            <a-input-password
+              v-model:value="formState.password"
+              size="large"
+              placeholder="Create a password (min 6 characters)"
+            >
+              <template #prefix>
+                <LockOutlined />
+              </template>
+            </a-input-password>
+          </a-form-item>
+
+          <a-form-item>
+            <a-button
+              type="primary"
+              html-type="submit"
+              size="large"
+              :loading="loading"
+              block
+              class="register-button"
+            >
+              <UserAddOutlined v-if="!loading" />
+              {{ loading ? "Creating Account..." : "Create Account" }}
+            </a-button>
+          </a-form-item>
+        </a-form>
+
+        <a-divider>or</a-divider>
+
+        <div class="login-link">
+          <span>Already have an account?</span>
+          <a-button type="link" @click="router.push('/login')">
+            Login now
+          </a-button>
         </div>
-      </div>
+      </a-card>
+
+      <div class="decoration-left"></div>
+      <div class="decoration-right"></div>
     </div>
   </div>
 </template>
@@ -131,52 +168,158 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  background: linear-gradient(135deg, #fa8c16 0%, #fa541c 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.register-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 500px;
 }
 
 .register-card {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 450px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
 }
 
-.register-card h1 {
+.register-card :deep(.ant-card-body) {
+  padding: 48px 40px;
+}
+
+.register-header {
   text-align: center;
-  color: #2d3748;
-  margin-bottom: 8px;
+  margin-bottom: 40px;
+}
+
+.register-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #fa8c16 0%, #fa541c 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.register-header h1 {
   font-size: 2rem;
+  font-weight: 700;
+  color: #262626;
+  margin-bottom: 8px;
 }
 
 .subtitle {
-  text-align: center;
-  color: #718096;
-  margin-bottom: 30px;
+  color: #8c8c8c;
+  font-size: 14px;
+  margin: 0;
 }
 
-.form-group {
-  margin-bottom: 20px;
+.register-form {
+  margin-top: 32px;
 }
 
-.required {
-  color: #e53e3e;
-}
-
-.register-footer {
-  text-align: center;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.register-footer a {
-  color: #3182ce;
-  text-decoration: none;
+.register-form :deep(.ant-form-item-label > label) {
   font-weight: 500;
+  font-size: 14px;
 }
 
-.register-footer a:hover {
-  text-decoration: underline;
+.register-form :deep(.ant-input-affix-wrapper) {
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.register-form :deep(.ant-input-password) {
+  padding: 0;
+}
+
+.register-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fa8c16 0%, #fa541c 100%);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.register-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(250, 140, 22, 0.4);
+}
+
+.login-link {
+  text-align: center;
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+.login-link span {
+  margin-right: 4px;
+}
+
+/* Decorations */
+.decoration-left,
+.decoration-right {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 20s infinite ease-in-out;
+}
+
+.decoration-left {
+  top: -150px;
+  left: -150px;
+}
+
+.decoration-right {
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(180deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .register-view {
+    padding: 20px 16px;
+  }
+
+  .register-card :deep(.ant-card-body) {
+    padding: 32px 24px;
+  }
+
+  .register-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .register-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+
+  .decoration-left,
+  .decoration-right {
+    display: none;
+  }
 }
 </style>

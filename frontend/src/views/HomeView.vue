@@ -1,45 +1,179 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { useProductStore } from "@/stores/product.store";
 import ProductCard from "@/components/ProductCard.vue";
+import {
+  ShoppingOutlined,
+  RocketOutlined,
+  SafetyOutlined,
+  CustomerServiceOutlined,
+} from "@ant-design/icons-vue";
 
 const productStore = useProductStore();
+const router = useRouter();
 
 onMounted(() => {
   productStore.fetchProducts();
 });
+
+const features = [
+  {
+    icon: ShoppingOutlined,
+    title: "Wide Selection",
+    description: "Explore our diverse range of snacks, drinks, and milk tea",
+  },
+  {
+    icon: RocketOutlined,
+    title: "Fast Delivery",
+    description: "Quick and reliable delivery to your doorstep",
+  },
+  {
+    icon: SafetyOutlined,
+    title: "Quality Assured",
+    description: "Only the finest and freshest products",
+  },
+  {
+    icon: CustomerServiceOutlined,
+    title: "24/7 Support",
+    description: "Customer service always ready to help",
+  },
+];
 </script>
 
 <template>
   <div class="home-view">
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Welcome to TeaStore</h1>
-        <p>Discover the finest selection of snacks, drinks, and milk tea</p>
-        <router-link to="/products" class="cta-button">
-          Browse Products
-        </router-link>
+    <!-- Hero Section -->
+    <section class="hero gradient-primary">
+      <div class="hero-content fade-in">
+        <h1 class="hero-title">Welcome to TeaStore</h1>
+        <p class="hero-subtitle">
+          Discover the finest selection of snacks, drinks, and milk tea
+        </p>
+        <div class="hero-actions">
+          <a-button
+            type="primary"
+            size="large"
+            @click="router.push('/products')"
+            class="cta-button hover-scale"
+          >
+            <ShoppingOutlined />
+            Browse Products
+          </a-button>
+          <a-button
+            size="large"
+            @click="router.push('/register')"
+            class="secondary-button"
+          >
+            Join Now
+          </a-button>
+        </div>
+      </div>
+      <div class="hero-decoration">
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
       </div>
     </section>
 
+    <!-- Features Section -->
+    <section class="features-section">
+      <div class="container">
+        <a-row :gutter="[24, 24]">
+          <a-col
+            v-for="(feature, index) in features"
+            :key="index"
+            :xs="24"
+            :sm="12"
+            :lg="6"
+          >
+            <a-card class="feature-card hover-lift" :bordered="false">
+              <div class="feature-icon">
+                <component :is="feature.icon" />
+              </div>
+              <h3>{{ feature.title }}</h3>
+              <p>{{ feature.description }}</p>
+            </a-card>
+          </a-col>
+        </a-row>
+      </div>
+    </section>
+
+    <!-- Featured Products Section -->
     <section class="featured-products">
       <div class="container">
-        <h2>Featured Products</h2>
-
-        <div v-if="productStore.loading" class="loading">
-          Loading products...
+        <div class="section-header">
+          <h2 class="section-title">Featured Products</h2>
+          <p class="section-subtitle">
+            Check out our most popular items
+          </p>
         </div>
 
-        <div v-else-if="productStore.error" class="error">
-          {{ productStore.error }}
-        </div>
+        <a-spin :spinning="productStore.loading" size="large">
+          <div v-if="productStore.error" class="error-state">
+            <a-result
+              status="error"
+              title="Failed to load products"
+              :sub-title="productStore.error"
+            >
+              <template #extra>
+                <a-button
+                  type="primary"
+                  @click="productStore.fetchProducts()"
+                >
+                  Try Again
+                </a-button>
+              </template>
+            </a-result>
+          </div>
 
-        <div v-else class="products-grid">
-          <ProductCard
-            v-for="product in productStore.products.slice(0, 6)"
-            :key="product.id"
-            :product="product"
-          />
+          <a-row
+            v-else
+            :gutter="[24, 24]"
+            class="products-grid"
+          >
+            <a-col
+              v-for="product in productStore.products.slice(0, 6)"
+              :key="product.id"
+              :xs="24"
+              :sm="12"
+              :md="12"
+              :lg="8"
+              :xl="8"
+            >
+              <ProductCard :product="product" />
+            </a-col>
+          </a-row>
+        </a-spin>
+
+        <div class="view-more">
+          <a-button
+            type="primary"
+            size="large"
+            @click="router.push('/products')"
+            class="hover-scale"
+          >
+            View All Products
+          </a-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section gradient-success">
+      <div class="container">
+        <div class="cta-content fade-in">
+          <h2>Ready to Start Shopping?</h2>
+          <p>Join thousands of satisfied customers today!</p>
+          <a-button
+            type="primary"
+            size="large"
+            ghost
+            @click="router.push('/register')"
+            class="hover-scale"
+          >
+            Create Free Account
+          </a-button>
         </div>
       </div>
     </section>
@@ -51,82 +185,265 @@ onMounted(() => {
   min-height: 100vh;
 }
 
+/* Hero Section */
 .hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 120px 20px 80px;
+  position: relative;
+  padding: 120px 24px 100px;
   text-align: center;
+  overflow: hidden;
+  color: white;
 }
 
-.hero-content h1 {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-}
-
-.hero-content p {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  opacity: 0.9;
-}
-
-.cta-button {
-  background-color: white;
-  color: #667eea;
-  padding: 15px 30px;
-  border-radius: 30px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: transform 0.2s;
-  display: inline-block;
-}
-
-.cta-button:hover {
-  transform: translateY(-2px);
-}
-
-.featured-products {
-  padding: 80px 20px;
-  background-color: #f7fafc;
-}
-
-.container {
-  max-width: 1200px;
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
   margin: 0 auto;
 }
 
-.featured-products h2 {
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  line-height: 1.2;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 40px;
+  opacity: 0.95;
+  line-height: 1.6;
+  animation: fadeInUp 0.8s ease-out 0.2s backwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeInUp 0.8s ease-out 0.4s backwards;
+}
+
+.cta-button,
+.secondary-button {
+  height: 48px;
+  padding: 0 32px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+
+.secondary-button {
+  background: white;
+  color: #667eea;
+  border: none;
+}
+
+.secondary-button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Hero Decorations */
+.hero-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 20s infinite ease-in-out;
+}
+
+.bubble-1 {
+  width: 300px;
+  height: 300px;
+  top: -150px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.bubble-2 {
+  width: 200px;
+  height: 200px;
+  top: 50%;
+  right: -50px;
+  animation-delay: 7s;
+}
+
+.bubble-3 {
+  width: 150px;
+  height: 150px;
+  bottom: -75px;
+  left: 30%;
+  animation-delay: 14s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-50px) rotate(180deg);
+  }
+}
+
+/* Features Section */
+.features-section {
+  padding: 80px 24px;
+  background: #fff;
+}
+
+.feature-card {
   text-align: center;
+  padding: 32px 24px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f6f9fc 0%, #ffffff 100%);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.feature-icon {
+  font-size: 48px;
+  color: #1890ff;
+  margin-bottom: 16px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.feature-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 12px;
+}
+
+.feature-card p {
+  color: #8c8c8c;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Featured Products Section */
+.featured-products {
+  padding: 80px 24px;
+  background: #f0f2f5;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-title {
   font-size: 2.5rem;
-  color: #2d3748;
-  margin-bottom: 50px;
+  font-weight: 700;
+  color: #262626;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #8c8c8c;
+  animation: fadeInUp 0.6s ease-out 0.1s backwards;
 }
 
 .products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  margin-bottom: 48px;
 }
 
-.loading,
-.error {
+.error-state {
+  padding: 40px 0;
+}
+
+.view-more {
   text-align: center;
-  padding: 40px;
-  font-size: 1.1rem;
+  padding-top: 24px;
 }
 
-.error {
-  color: #e53e3e;
+/* CTA Section */
+.cta-section {
+  padding: 100px 24px;
+  text-align: center;
+  color: white;
 }
 
+.cta-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.cta-content p {
+  font-size: 1.2rem;
+  margin-bottom: 32px;
+  opacity: 0.95;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .hero-content h1 {
+  .hero {
+    padding: 100px 16px 60px;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .cta-button,
+  .secondary-button {
+    width: 100%;
+  }
+
+  .features-section,
+  .featured-products,
+  .cta-section {
+    padding: 60px 16px;
+  }
+
+  .section-title {
     font-size: 2rem;
   }
 
-  .products-grid {
-    grid-template-columns: 1fr;
+  .cta-content h2 {
+    font-size: 2rem;
+  }
+
+  .bubble {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
   }
 }
 </style>

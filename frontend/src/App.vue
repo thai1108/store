@@ -15,12 +15,16 @@ onMounted(() => {
   <div id="app">
     <NavBar />
     <main>
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <transition name="page" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </RouterView>
     </main>
   </div>
 </template>
 
-<style scoped>
+<style>
 #app {
   min-height: 100vh;
   font-family:
@@ -29,6 +33,6 @@ onMounted(() => {
 }
 
 main {
-  padding-top: 80px; /* Space for fixed navbar */
+  padding-top: 64px; /* Space for fixed navbar */
 }
 </style>

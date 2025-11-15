@@ -1,46 +1,124 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router";
+import { ref } from "vue";
+import { RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";
 import { useCartStore } from "@/stores/cart.store";
+import {
+  ShoppingCartOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  AppstoreOutlined,
+  HistoryOutlined,
+  LoginOutlined,
+  UserAddOutlined,
+  MenuOutlined,
+} from "@ant-design/icons-vue";
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
+const router = useRouter();
+
+const mobileMenuVisible = ref(false);
+
+const handleLogout = () => {
+  authStore.logout();
+  router.push("/");
+};
+
+const closeMobileMenu = () => {
+  mobileMenuVisible.value = false;
+};
 </script>
 
 <template>
   <nav class="navbar">
     <div class="nav-container">
-      <RouterLink to="/" class="nav-brand"> 🧋 TeaStore </RouterLink>
+      <div class="nav-header">
+        <RouterLink to="/" class="nav-brand" @click="closeMobileMenu">
+          <span class="brand-icon">🧋</span>
+          <span class="brand-text">TeaStore</span>
+        </RouterLink>
 
-      <div class="nav-links">
-        <RouterLink to="/products" class="nav-link">Products</RouterLink>
+        <a-button
+          type="text"
+          class="mobile-menu-btn"
+          @click="mobileMenuVisible = !mobileMenuVisible"
+        >
+          <MenuOutlined />
+        </a-button>
+      </div>
+
+      <div class="nav-links" :class="{ 'mobile-open': mobileMenuVisible }">
+        <RouterLink
+          to="/products"
+          class="nav-link"
+          @click="closeMobileMenu"
+        >
+          <AppstoreOutlined />
+          <span>Products</span>
+        </RouterLink>
 
         <RouterLink
           v-if="authStore.isAuthenticated"
           to="/orders"
           class="nav-link"
+          @click="closeMobileMenu"
         >
-          Order History
+          <HistoryOutlined />
+          <span>Orders</span>
         </RouterLink>
 
-        <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-link">
-          Admin
+        <RouterLink
+          v-if="authStore.isAdmin"
+          to="/admin"
+          class="nav-link admin-link"
+          @click="closeMobileMenu"
+        >
+          <span>Admin Panel</span>
         </RouterLink>
 
-        <RouterLink to="/cart" class="nav-link cart-link">
-          🛒 Cart ({{ cartStore.totalItems }})
+        <RouterLink
+          to="/cart"
+          class="nav-link cart-link"
+          @click="closeMobileMenu"
+        >
+          <a-badge :count="cartStore.totalItems" :overflow-count="99">
+            <ShoppingCartOutlined :style="{ fontSize: '20px' }" />
+          </a-badge>
+          <span class="cart-text">Cart</span>
         </RouterLink>
 
         <div v-if="!authStore.isAuthenticated" class="auth-links">
-          <RouterLink to="/login" class="nav-link">Login</RouterLink>
-          <RouterLink to="/register" class="nav-link btn-primary"
-            >Register</RouterLink
-          >
+          <RouterLink to="/login" class="nav-link" @click="closeMobileMenu">
+            <LoginOutlined />
+            <span>Login</span>
+          </RouterLink>
+          <a-button type="primary" @click="router.push('/register'); closeMobileMenu()">
+            <UserAddOutlined />
+            Register
+          </a-button>
         </div>
 
         <div v-else class="user-menu">
-          <span class="user-name">{{ authStore.user?.name }}</span>
-          <button @click="authStore.logout" class="logout-btn">Logout</button>
+          <a-dropdown>
+            <a-button type="text" class="user-btn">
+              <UserOutlined />
+              {{ authStore.user?.name }}
+            </a-button>
+            <template #overlay>
+              <a-menu>
+                <a-menu-item key="profile">
+                  <UserOutlined />
+                  Profile
+                </a-menu-item>
+                <a-menu-divider />
+                <a-menu-item key="logout" @click="handleLogout" danger>
+                  <LogoutOutlined />
+                  Logout
+                </a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown>
         </div>
       </div>
     </div>
@@ -54,9 +132,21 @@ const cartStore = useCartStore();
   left: 0;
   right: 0;
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   z-index: 1000;
-  padding: 0 20px;
+  padding: 0 24px;
+  animation: slideInDown 0.4s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nav-container {
@@ -65,94 +155,199 @@ const cartStore = useCartStore();
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  min-height: 64px;
+}
+
+.nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
 }
 
 .nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 1.5rem;
   font-weight: bold;
   text-decoration: none;
-  color: #2d3748;
+  color: #1890ff;
+  transition: all 0.3s ease;
+}
+
+.nav-brand:hover {
+  transform: scale(1.05);
+  color: #096dd9;
+}
+
+.brand-icon {
+  font-size: 2rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.brand-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.mobile-menu-btn {
+  display: none;
+  font-size: 20px;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 8px;
+  flex: 2;
+  justify-content: flex-end;
 }
 
 .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   text-decoration: none;
-  color: #4a5568;
+  color: #595959;
   padding: 8px 16px;
-  border-radius: 6px;
-  transition: all 0.2s;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .nav-link:hover {
-  background-color: #f7fafc;
-  color: #2d3748;
+  background-color: #f0f2f5;
+  color: #1890ff;
+  transform: translateY(-2px);
 }
 
 .nav-link.router-link-active {
-  background-color: #3182ce;
-  color: white;
+  background-color: #e6f7ff;
+  color: #1890ff;
 }
 
 .cart-link {
-  background-color: #48bb78;
+  background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+  color: white !important;
+  padding: 8px 16px;
+}
+
+.cart-link:hover {
+  background: linear-gradient(135deg, #389e0d 0%, #237804 100%);
+  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.3);
+  transform: translateY(-2px);
+}
+
+.admin-link {
+  background: linear-gradient(135deg, #fa8c16 0%, #fa541c 100%);
   color: white !important;
 }
 
-.btn-primary {
-  background-color: #3182ce;
-  color: white !important;
-}
-
-.btn-primary:hover {
-  background-color: #2c5aa0;
+.admin-link:hover {
+  background: linear-gradient(135deg, #fa541c 0%, #d4380d 100%);
+  box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3);
 }
 
 .auth-links {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
 .user-menu {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
-.user-name {
-  color: #4a5568;
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 500;
 }
 
-.logout-btn {
-  background: #e53e3e;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.logout-btn:hover {
-  background-color: #c53030;
-}
-
 @media (max-width: 768px) {
-  .nav-links {
-    flex-direction: column;
-    gap: 10px;
+  .navbar {
+    padding: 0 16px;
   }
 
-  .nav-container {
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .nav-header {
+    width: 100%;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: white;
     flex-direction: column;
-    height: auto;
-    padding: 10px 0;
+    align-items: stretch;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  .nav-links.mobile-open {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .nav-link {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 16px;
+  }
+
+  .cart-link,
+  .admin-link {
+    width: 100%;
+  }
+
+  .auth-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .auth-links .nav-link,
+  .auth-links :deep(.ant-btn) {
+    width: 100%;
+  }
+
+  .user-menu {
+    width: 100%;
+  }
+
+  .user-menu :deep(.ant-dropdown-trigger) {
+    width: 100%;
+  }
+
+  .user-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .cart-text {
+    display: inline;
+  }
+}
+
+@media (min-width: 769px) {
+  .cart-text {
+    display: none;
   }
 }
 </style>
