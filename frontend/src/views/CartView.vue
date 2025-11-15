@@ -2,6 +2,7 @@
 import { useCartStore } from "@/stores/cart.store";
 import { computed, h } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { CartItem } from "@/types/order";
 import {
   ShoppingCartOutlined,
@@ -11,6 +12,7 @@ import {
 } from "@ant-design/icons-vue";
 import { Modal, message } from "ant-design-vue";
 
+const { t } = useI18n();
 const cartStore = useCartStore();
 const router = useRouter();
 
@@ -30,29 +32,29 @@ const formatPrice = (price: number) => {
 
 const handleClearCart = () => {
   Modal.confirm({
-    title: "Clear Shopping Cart",
-    content: "Are you sure you want to remove all items from your cart?",
-    okText: "Yes, Clear Cart",
+    title: t('cart.clearCartConfirm'),
+    content: t('cart.clearCartMessage'),
+    okText: t('cart.yesClear'),
     okType: "danger",
-    cancelText: "Cancel",
+    cancelText: t('common.cancel'),
     icon: () => h(ClearOutlined),
     onOk() {
       cartStore.clearCart();
-      message.success("Cart cleared successfully");
+      message.success(t('cart.cartCleared'));
     },
   });
 };
 
 const handleRemoveItem = (productId: string, productName: string) => {
   Modal.confirm({
-    title: "Remove Item",
-    content: `Remove "${productName}" from cart?`,
-    okText: "Remove",
+    title: t('cart.removeItem'),
+    content: t('cart.removeItemMessage', { name: productName }),
+    okText: t('cart.remove'),
     okType: "danger",
-    cancelText: "Cancel",
+    cancelText: t('common.cancel'),
     onOk() {
       cartStore.removeFromCart(productId);
-      message.success("Item removed from cart");
+      message.success(t('cart.itemRemoved'));
     },
   });
 };
@@ -64,36 +66,36 @@ const handleRemoveItem = (productId: string, productName: string) => {
       <div class="page-header fade-in">
         <h1>
           <ShoppingCartOutlined />
-          Shopping Cart
+          {{ $t('cart.title') }}
         </h1>
       </div>
 
       <a-empty
         v-if="cartStore.items.length === 0"
-        description="Your cart is empty"
+        :description="$t('cart.empty')"
         class="empty-cart fade-in-up"
       >
         <template #image>
           <ShoppingCartOutlined :style="{ fontSize: '80px', color: '#bfbfbf' }" />
         </template>
-        <p class="empty-subtitle">Add some delicious items to get started!</p>
+        <p class="empty-subtitle">{{ $t('cart.emptySubtitle') }}</p>
         <a-button type="primary" size="large" @click="router.push('/products')">
           <ShoppingOutlined />
-          Browse Products
+          {{ $t('cart.browseProducts') }}
         </a-button>
       </a-empty>
 
       <a-row v-else :gutter="[24, 24]" class="cart-content">
         <a-col :xs="24" :lg="16">
           <a-card
-            title="Cart Items"
+            :title="$t('cart.cartItems')"
             :bordered="false"
             class="cart-items-card fade-in-up"
           >
             <template #extra>
               <a-button danger @click="handleClearCart">
                 <ClearOutlined />
-                Clear All
+                {{ $t('cart.clearAll') }}
               </a-button>
             </template>
 
@@ -157,29 +159,29 @@ const handleRemoveItem = (productId: string, productName: string) => {
         <a-col :xs="24" :lg="8">
           <a-affix :offset-top="80">
             <a-card
-              title="Order Summary"
+              :title="$t('cart.orderSummary')"
               :bordered="false"
               class="summary-card fade-in-up"
             >
               <a-descriptions :column="1" bordered>
-                <a-descriptions-item label="Subtotal">
+                <a-descriptions-item :label="$t('cart.subtotal')">
                   <span class="summary-value">{{ formattedTotal }}</span>
                 </a-descriptions-item>
-                <a-descriptions-item label="Items">
+                <a-descriptions-item :label="$t('cart.items')">
                   <a-badge
                     :count="cartStore.totalItems"
                     :number-style="{ backgroundColor: '#52c41a' }"
                   />
                 </a-descriptions-item>
-                <a-descriptions-item label="Shipping">
-                  <a-tag color="green">FREE</a-tag>
+                <a-descriptions-item :label="$t('cart.shipping')">
+                  <a-tag color="green">{{ $t('cart.free') }}</a-tag>
                 </a-descriptions-item>
               </a-descriptions>
 
               <a-divider />
 
               <div class="total-section">
-                <div class="total-label">Total</div>
+                <div class="total-label">{{ $t('cart.total') }}</div>
                 <div class="total-value">{{ formattedTotal }}</div>
               </div>
 
@@ -192,7 +194,7 @@ const handleRemoveItem = (productId: string, productName: string) => {
                   class="checkout-button"
                 >
                   <ShoppingCartOutlined />
-                  Proceed to Checkout
+                  {{ $t('cart.proceedToCheckout') }}
                 </a-button>
                 
                 <a-button
@@ -201,7 +203,7 @@ const handleRemoveItem = (productId: string, productName: string) => {
                   @click="router.push('/products')"
                 >
                   <ShoppingOutlined />
-                  Continue Shopping
+                  {{ $t('cart.continueShopping') }}
                 </a-button>
               </a-space>
             </a-card>

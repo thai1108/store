@@ -5,9 +5,9 @@
 <template>
   <div class="placeholder-view">
     <div class="container">
-      <h1>Order History</h1>
-      <p>This view is under construction. Please check back later!</p>
-      <router-link to="/" class="btn btn-primary">Back to Home</router-link>
+      <h1>{{ $t('orders.title') }}</h1>
+      <p>{{ $t('orders.underConstruction') }}</p>
+      <router-link to="/" class="btn btn-primary">{{ $t('orders.backToHome') }}</router-link>
     </div>
   </div>
 </template>

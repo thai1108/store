@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useProductStore } from "@/stores/product.store";
 import ProductCard from "@/components/ProductCard.vue";
+import { useI18n } from "vue-i18n";
 import {
   ShoppingOutlined,
   RocketOutlined,
@@ -12,33 +13,34 @@ import {
 
 const productStore = useProductStore();
 const router = useRouter();
+const { t } = useI18n();
 
 onMounted(() => {
   productStore.fetchProducts();
 });
 
-const features = [
+const features = computed(() => [
   {
     icon: ShoppingOutlined,
-    title: "Wide Selection",
-    description: "Explore our diverse range of snacks, drinks, and milk tea",
+    title: t('home.features.wideSelection'),
+    description: t('home.features.wideSelectionDesc'),
   },
   {
     icon: RocketOutlined,
-    title: "Fast Delivery",
-    description: "Quick and reliable delivery to your doorstep",
+    title: t('home.features.fastDelivery'),
+    description: t('home.features.fastDeliveryDesc'),
   },
   {
     icon: SafetyOutlined,
-    title: "Quality Assured",
-    description: "Only the finest and freshest products",
+    title: t('home.features.qualityAssured'),
+    description: t('home.features.qualityAssuredDesc'),
   },
   {
     icon: CustomerServiceOutlined,
-    title: "24/7 Support",
-    description: "Customer service always ready to help",
+    title: t('home.features.support247'),
+    description: t('home.features.support247Desc'),
   },
-];
+]);
 </script>
 
 <template>
@@ -46,9 +48,9 @@ const features = [
     <!-- Hero Section -->
     <section class="hero gradient-primary">
       <div class="hero-content fade-in">
-        <h1 class="hero-title">Welcome to TeaStore</h1>
+        <h1 class="hero-title">{{ $t('home.title') }}</h1>
         <p class="hero-subtitle">
-          Discover the finest selection of snacks, drinks, and milk tea
+          {{ $t('home.subtitle') }}
         </p>
         <div class="hero-actions">
           <a-button
@@ -58,14 +60,14 @@ const features = [
             class="cta-button hover-scale"
           >
             <ShoppingOutlined />
-            Browse Products
+            {{ $t('home.browseProducts') }}
           </a-button>
           <a-button
             size="large"
             @click="router.push('/register')"
             class="secondary-button"
           >
-            Join Now
+            {{ $t('home.joinNow') }}
           </a-button>
         </div>
       </div>
@@ -103,9 +105,9 @@ const features = [
     <section class="featured-products">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">Featured Products</h2>
+          <h2 class="section-title">{{ $t('home.featuredProducts') }}</h2>
           <p class="section-subtitle">
-            Check out our most popular items
+            {{ $t('home.featuredProductsSubtitle') }}
           </p>
         </div>
 
@@ -113,7 +115,7 @@ const features = [
           <div v-if="productStore.error" class="error-state">
             <a-result
               status="error"
-              title="Failed to load products"
+              :title="$t('products.failedToLoad')"
               :sub-title="productStore.error"
             >
               <template #extra>
@@ -121,7 +123,7 @@ const features = [
                   type="primary"
                   @click="productStore.fetchProducts()"
                 >
-                  Try Again
+                  {{ $t('products.tryAgain') }}
                 </a-button>
               </template>
             </a-result>
@@ -153,7 +155,7 @@ const features = [
             @click="router.push('/products')"
             class="hover-scale"
           >
-            View All Products
+            {{ $t('home.viewAllProducts') }}
           </a-button>
         </div>
       </div>
@@ -163,8 +165,8 @@ const features = [
     <section class="cta-section gradient-success">
       <div class="container">
         <div class="cta-content fade-in">
-          <h2>Ready to Start Shopping?</h2>
-          <p>Join thousands of satisfied customers today!</p>
+          <h2>{{ $t('home.readyToShop') }}</h2>
+          <p>{{ $t('home.readyToShopText') }}</p>
           <a-button
             type="primary"
             size="large"
@@ -172,7 +174,7 @@ const features = [
             @click="router.push('/register')"
             class="hover-scale"
           >
-            Create Free Account
+            {{ $t('home.createFreeAccount') }}
           </a-button>
         </div>
       </div>

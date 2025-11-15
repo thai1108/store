@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { orderService } from "@/services/order-service";
 
+const { t } = useI18n();
 const router = useRouter();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
@@ -37,12 +39,12 @@ const formatPrice = (price: number) => {
 
 const handleSubmit = async () => {
   if (!form.value.name || !form.value.phone) {
-    error.value = "Name and phone number are required";
+    error.value = t('checkout.validation.required');
     return;
   }
 
   if (cartStore.items.length === 0) {
-    error.value = "Your cart is empty";
+    error.value = t('checkout.validation.emptyCart');
     return;
   }
 
@@ -79,10 +81,10 @@ const handleSubmit = async () => {
         }
       }, 2000);
     } else {
-      error.value = result.message || "Failed to create order";
+      error.value = result.message || t('checkout.failed');
     }
   } catch (err) {
-    error.value = "Network error occurred";
+    error.value = t('errors.network');
   } finally {
     loading.value = false;
   }
@@ -99,16 +101,16 @@ if (authStore.isAuthenticated && authStore.user) {
 <template>
   <div class="checkout-view">
     <div class="container">
-      <h1>Checkout</h1>
+      <h1>{{ $t('checkout.title') }}</h1>
 
       <div v-if="success" class="alert alert-success">
-        🎉 Order placed successfully! You will be redirected shortly.
+        {{ $t('checkout.success') }}
       </div>
 
       <div v-else class="checkout-content">
         <div class="checkout-form">
           <div class="card">
-            <h2>Customer Information</h2>
+            <h2>{{ $t('checkout.customerInfo') }}</h2>
 
             <div v-if="error" class="alert alert-error">
               {{ error }}
@@ -117,62 +119,62 @@ if (authStore.isAuthenticated && authStore.user) {
             <form @submit.prevent="handleSubmit">
               <div class="form-group">
                 <label for="name"
-                  >Full Name <span class="required">*</span>:</label
+                  >{{ $t('checkout.name') }} <span class="required">*</span>:</label
                 >
                 <input
                   id="name"
                   v-model="form.name"
                   type="text"
                   class="form-control"
-                  placeholder="Enter your full name"
+                  :placeholder="$t('checkout.namePlaceholder')"
                   required
                 />
               </div>
 
               <div class="form-group">
                 <label for="phone"
-                  >Phone Number <span class="required">*</span>:</label
+                  >{{ $t('checkout.phone') }} <span class="required">*</span>:</label
                 >
                 <input
                   id="phone"
                   v-model="form.phone"
                   type="tel"
                   class="form-control"
-                  placeholder="Enter your phone number"
+                  :placeholder="$t('checkout.phonePlaceholder')"
                   required
                 />
               </div>
 
               <div class="form-group">
-                <label for="email">Email:</label>
+                <label for="email">{{ $t('checkout.email') }}:</label>
                 <input
                   id="email"
                   v-model="form.email"
                   type="email"
                   class="form-control"
-                  placeholder="Enter your email (optional)"
+                  :placeholder="$t('checkout.emailPlaceholder')"
                 />
               </div>
 
               <div class="form-group">
-                <label for="address">Delivery Address:</label>
+                <label for="address">{{ $t('checkout.address') }}:</label>
                 <textarea
                   id="address"
                   v-model="form.address"
                   class="form-control"
                   rows="3"
-                  placeholder="Enter your delivery address (optional)"
+                  :placeholder="$t('checkout.addressPlaceholder')"
                 ></textarea>
               </div>
 
               <div class="form-group">
-                <label for="notes">Order Notes:</label>
+                <label for="notes">{{ $t('checkout.notes') }}:</label>
                 <textarea
                   id="notes"
                   v-model="form.notes"
                   class="form-control"
                   rows="3"
-                  placeholder="Any special instructions? (optional)"
+                  :placeholder="$t('checkout.notesPlaceholder')"
                 ></textarea>
               </div>
 
@@ -182,7 +184,7 @@ if (authStore.isAuthenticated && authStore.user) {
                 :disabled="loading || cartStore.items.length === 0"
               >
                 <span v-if="loading" class="loading-spinner"></span>
-                <span v-else>Place Order ({{ formattedTotal }})</span>
+                <span v-else>{{ $t('checkout.placeOrder') }} ({{ formattedTotal }})</span>
               </button>
             </form>
           </div>
@@ -190,7 +192,7 @@ if (authStore.isAuthenticated && authStore.user) {
 
         <div class="order-summary">
           <div class="card">
-            <h2>Order Summary</h2>
+            <h2>{{ $t('checkout.orderSummary') }}</h2>
 
             <div class="order-items">
               <div
@@ -210,19 +212,19 @@ if (authStore.isAuthenticated && authStore.user) {
 
             <div class="order-total">
               <div class="total-row">
-                <span>Subtotal:</span>
+                <span>{{ $t('checkout.subtotal') }}:</span>
                 <span>{{ formattedTotal }}</span>
               </div>
               <div class="total-row final-total">
-                <span>Total:</span>
+                <span>{{ $t('checkout.total') }}:</span>
                 <span>{{ formattedTotal }}</span>
               </div>
             </div>
 
             <div class="payment-note">
-              <p><strong>Payment:</strong> Cash on delivery</p>
+              <p><strong>{{ $t('checkout.payment') }}:</strong> {{ $t('checkout.paymentMethod') }}</p>
               <p class="text-muted">
-                You will pay when you receive your order.
+                {{ $t('checkout.paymentNote') }}
               </p>
             </div>
           </div>

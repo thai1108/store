@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useProductStore } from "@/stores/product.store";
 import { ProductFilter } from "@/types/product";
 import ProductCard from "@/components/ProductCard.vue";
 import { FilterOutlined, ReloadOutlined } from "@ant-design/icons-vue";
 
+const { t } = useI18n();
 const productStore = useProductStore();
 const selectedCategory = ref<string>("");
 const showInStockOnly = ref(false);
 const searchText = ref("");
 
-const categories = [
-  { value: "", label: "All Categories" },
-  { value: "snack", label: "🍿 Snacks" },
-  { value: "drink", label: "🥤 Drinks" },
-  { value: "milk-tea", label: "🧋 Milk Tea" },
-];
+const categories = computed(() => [
+  { value: "", label: t('products.allCategories') },
+  { value: "snack", label: `🍿 ${t('products.categories.snack')}` },
+  { value: "drink", label: `🥤 ${t('products.categories.drink')}` },
+  { value: "milk-tea", label: `🧋 ${t('products.categories.milkTea')}` },
+]);
 
 const applyFilters = () => {
   const filter: ProductFilter = {};
@@ -64,9 +66,9 @@ onMounted(() => {
       <div class="page-header fade-in">
         <h1>
           <FilterOutlined />
-          Our Products
+          {{ $t('products.title') }}
         </h1>
-        <p>Explore our amazing collection of snacks, drinks, and milk tea</p>
+        <p>{{ $t('products.subtitle') }}</p>
       </div>
 
       <!-- Filters Card -->
@@ -75,7 +77,7 @@ onMounted(() => {
           <a-col :xs="24" :sm="12" :md="6">
             <a-select
               v-model:value="selectedCategory"
-              placeholder="Select Category"
+              :placeholder="$t('products.selectCategory')"
               style="width: 100%"
               size="large"
               @change="applyFilters"
@@ -93,7 +95,7 @@ onMounted(() => {
           <a-col :xs="24" :sm="12" :md="8">
             <a-input-search
               v-model:value="searchText"
-              placeholder="Search products..."
+              :placeholder="$t('products.searchPlaceholder')"
               size="large"
               allow-clear
             />
@@ -107,7 +109,7 @@ onMounted(() => {
             >
               <span class="checkbox-label">
                 <span class="checkbox-icon">✓</span>
-                In Stock Only
+                {{ $t('products.inStockOnly') }}
               </span>
             </a-checkbox>
           </a-col>
@@ -119,7 +121,7 @@ onMounted(() => {
               @click="resetFilters"
             >
               <ReloadOutlined />
-              Reset
+              {{ $t('products.reset') }}
             </a-button>
           </a-col>
         </a-row>
@@ -128,32 +130,32 @@ onMounted(() => {
 
         <div class="filter-summary">
           <a-tag color="blue" class="result-tag">
-            {{ productCount }} {{ productCount === 1 ? 'Product' : 'Products' }} Found
+            {{ productCount }} {{ productCount === 1 ? $t('products.product') : $t('products.products') }} {{ $t('products.found') }}
           </a-tag>
           <a-tag v-if="selectedCategory" color="purple" closable @close="selectedCategory = ''; applyFilters()">
             {{ categories.find(c => c.value === selectedCategory)?.label }}
           </a-tag>
           <a-tag v-if="showInStockOnly" color="green" closable @close="showInStockOnly = false; applyFilters()">
-            In Stock Only
+            {{ $t('products.inStockOnly') }}
           </a-tag>
           <a-tag v-if="searchText" color="orange" closable @close="searchText = ''">
-            Search: "{{ searchText }}"
+            {{ $t('products.search') }}: "{{ searchText }}"
           </a-tag>
         </div>
       </a-card>
 
       <!-- Products Grid -->
       <div class="products-section">
-        <a-spin :spinning="productStore.loading" size="large" tip="Loading products...">
+        <a-spin :spinning="productStore.loading" size="large" :tip="$t('products.loading')">
           <div v-if="productStore.error" class="error-state">
             <a-result
               status="error"
-              title="Failed to load products"
+              :title="$t('products.failedToLoad')"
               :sub-title="productStore.error"
             >
               <template #extra>
                 <a-button type="primary" @click="productStore.fetchProducts()">
-                  Try Again
+                  {{ $t('products.tryAgain') }}
                 </a-button>
               </template>
             </a-result>
@@ -161,10 +163,10 @@ onMounted(() => {
 
           <a-empty
             v-else-if="filteredProducts.length === 0 && !productStore.loading"
-            description="No products found matching your criteria"
+            :description="$t('products.noProducts')"
           >
             <a-button type="primary" @click="resetFilters">
-              Reset Filters
+              {{ $t('products.resetFilters') }}
             </a-button>
           </a-empty>
 

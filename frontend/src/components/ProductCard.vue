@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h } from "vue";
+import { useI18n } from "vue-i18n";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/stores/cart.store";
 import { ShoppingCartOutlined, CheckCircleOutlined } from "@ant-design/icons-vue";
@@ -9,6 +10,7 @@ interface Props {
   product: Product;
 }
 
+const { t } = useI18n();
 const props = defineProps<Props>();
 const cartStore = useCartStore();
 
@@ -32,7 +34,7 @@ const addToCart = () => {
   if (props.product.inStock) {
     cartStore.addToCart(props.product);
     message.success({
-      content: `Added ${props.product.name} to cart!`,
+      content: t('products.addedToCart', { name: props.product.name }),
       icon: () => h(CheckCircleOutlined),
     });
   }
@@ -67,14 +69,14 @@ const addToCart = () => {
           color="red"
           class="stock-badge"
         >
-          Out of Stock
+          {{ $t('products.outOfStock') }}
         </a-tag>
         <a-tag
           v-else
           color="green"
           class="stock-badge"
         >
-          In Stock
+          {{ $t('products.inStock') }}
         </a-tag>
       </div>
     </template>
@@ -105,7 +107,7 @@ const addToCart = () => {
         <template #icon>
           <ShoppingCartOutlined />
         </template>
-        Add to Cart
+        {{ $t('products.addToCart') }}
       </a-button>
     </div>
   </a-card>

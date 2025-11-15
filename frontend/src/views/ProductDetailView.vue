@@ -6,10 +6,10 @@
 <template>
   <div class="placeholder-view">
     <div class="container">
-      <h1>Product Detail</h1>
-      <p>This view is under construction. Please check back later!</p>
+      <h1>{{ $t('products.detailTitle') }}</h1>
+      <p>{{ $t('products.underConstruction') }}</p>
       <router-link to="/products" class="btn btn-primary"
-        >Back to Products</router-link
+        >{{ $t('products.backToProducts') }}</router-link
       >
     </div>
   </div>

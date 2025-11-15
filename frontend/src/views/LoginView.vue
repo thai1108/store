@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth.store";
 import { UserOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import type { Rule } from "ant-design-vue/es/form";
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -23,12 +25,12 @@ const loading = ref(false);
 
 const rules: Record<string, Rule[]> = {
   email: [
-    { required: true, message: "Please input your email!", trigger: "blur" },
-    { type: "email", message: "Please enter a valid email!", trigger: "blur" },
+    { required: true, message: t('auth.login.validation.emailRequired'), trigger: "blur" },
+    { type: "email", message: t('auth.login.validation.emailInvalid'), trigger: "blur" },
   ],
   password: [
-    { required: true, message: "Please input your password!", trigger: "blur" },
-    { min: 6, message: "Password must be at least 6 characters!", trigger: "blur" },
+    { required: true, message: t('auth.login.validation.passwordRequired'), trigger: "blur" },
+    { min: 6, message: t('auth.login.validation.passwordMin'), trigger: "blur" },
   ],
 };
 
@@ -39,13 +41,13 @@ const handleSubmit = async () => {
     const result = await authStore.login(formState.email, formState.password);
 
     if (result.success) {
-      message.success("Login successful! Welcome back!");
+      message.success(t('auth.login.success'));
       router.push("/");
     } else {
-      message.error(result.message || "Login failed. Please try again.");
+      message.error(result.message || t('auth.login.failed'));
     }
   } catch (err) {
-    message.error("An error occurred. Please try again.");
+    message.error(t('errors.generic'));
   } finally {
     loading.value = false;
   }
@@ -60,8 +62,8 @@ const handleSubmit = async () => {
           <div class="login-icon">
             <UserOutlined />
           </div>
-          <h1>Welcome Back</h1>
-          <p class="subtitle">Sign in to your account to continue</p>
+          <h1>{{ $t('auth.login.title') }}</h1>
+          <p class="subtitle">{{ $t('auth.login.subtitle') }}</p>
         </div>
 
         <a-form
@@ -71,11 +73,11 @@ const handleSubmit = async () => {
           @finish="handleSubmit"
           class="login-form"
         >
-          <a-form-item label="Email" name="email">
+          <a-form-item :label="$t('auth.login.email')" name="email">
             <a-input
               v-model:value="formState.email"
               size="large"
-              placeholder="Enter your email"
+              :placeholder="$t('auth.login.emailPlaceholder')"
             >
               <template #prefix>
                 <UserOutlined />
@@ -83,11 +85,11 @@ const handleSubmit = async () => {
             </a-input>
           </a-form-item>
 
-          <a-form-item label="Password" name="password">
+          <a-form-item :label="$t('auth.login.password')" name="password">
             <a-input-password
               v-model:value="formState.password"
               size="large"
-              placeholder="Enter your password"
+              :placeholder="$t('auth.login.passwordPlaceholder')"
             >
               <template #prefix>
                 <LockOutlined />
@@ -97,8 +99,8 @@ const handleSubmit = async () => {
 
           <a-form-item>
             <div class="form-footer">
-              <a-checkbox>Remember me</a-checkbox>
-              <a href="#" class="forgot-link">Forgot password?</a>
+              <a-checkbox>{{ $t('auth.login.rememberMe') }}</a-checkbox>
+              <a href="#" class="forgot-link">{{ $t('auth.login.forgotPassword') }}</a>
             </div>
           </a-form-item>
 
@@ -112,17 +114,17 @@ const handleSubmit = async () => {
               class="login-button"
             >
               <LoginOutlined v-if="!loading" />
-              {{ loading ? "Logging in..." : "Login" }}
+              {{ loading ? $t('auth.login.loggingIn') : $t('auth.login.loginButton') }}
             </a-button>
           </a-form-item>
         </a-form>
 
-        <a-divider>or</a-divider>
+        <a-divider>{{ $t('common.or') }}</a-divider>
 
         <div class="register-link">
-          <span>Don't have an account?</span>
+          <span>{{ $t('auth.login.noAccount') }}</span>
           <a-button type="link" @click="router.push('/register')">
-            Register now
+            {{ $t('auth.login.registerNow') }}
           </a-button>
         </div>
       </a-card>

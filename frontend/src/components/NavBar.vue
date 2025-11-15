@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";
 import { useCartStore } from "@/stores/cart.store";
+import { useI18n } from "vue-i18n";
 import {
   ShoppingCartOutlined,
   UserOutlined,
@@ -12,11 +13,13 @@ import {
   LoginOutlined,
   UserAddOutlined,
   MenuOutlined,
+  GlobalOutlined,
 } from "@ant-design/icons-vue";
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
 const router = useRouter();
+const { locale } = useI18n();
 
 const mobileMenuVisible = ref(false);
 
@@ -27,6 +30,11 @@ const handleLogout = () => {
 
 const closeMobileMenu = () => {
   mobileMenuVisible.value = false;
+};
+
+const changeLanguage = (lang: string) => {
+  locale.value = lang;
+  localStorage.setItem('locale', lang);
 };
 </script>
 
@@ -55,7 +63,7 @@ const closeMobileMenu = () => {
           @click="closeMobileMenu"
         >
           <AppstoreOutlined />
-          <span>Products</span>
+          <span>{{ $t('nav.products') }}</span>
         </RouterLink>
 
         <RouterLink
@@ -65,7 +73,7 @@ const closeMobileMenu = () => {
           @click="closeMobileMenu"
         >
           <HistoryOutlined />
-          <span>Orders</span>
+          <span>{{ $t('nav.orders') }}</span>
         </RouterLink>
 
         <RouterLink
@@ -74,7 +82,7 @@ const closeMobileMenu = () => {
           class="nav-link admin-link"
           @click="closeMobileMenu"
         >
-          <span>Admin Panel</span>
+          <span>{{ $t('nav.adminPanel') }}</span>
         </RouterLink>
 
         <RouterLink
@@ -85,17 +93,43 @@ const closeMobileMenu = () => {
           <a-badge :count="cartStore.totalItems" :overflow-count="99">
             <ShoppingCartOutlined :style="{ fontSize: '20px' }" />
           </a-badge>
-          <span class="cart-text">Cart</span>
+          <span class="cart-text">{{ $t('nav.cart') }}</span>
         </RouterLink>
+
+        <!-- Language Switcher -->
+        <a-dropdown>
+          <a-button type="text" class="language-btn">
+            <GlobalOutlined />
+            <span class="language-text">{{ locale === 'vi' ? 'VI' : 'EN' }}</span>
+          </a-button>
+          <template #overlay>
+            <a-menu>
+              <a-menu-item 
+                key="vi" 
+                @click="changeLanguage('vi')"
+                :class="{ 'active-lang': locale === 'vi' }"
+              >
+                🇻🇳 {{ $t('language.vietnamese') }}
+              </a-menu-item>
+              <a-menu-item 
+                key="en" 
+                @click="changeLanguage('en')"
+                :class="{ 'active-lang': locale === 'en' }"
+              >
+                🇬🇧 {{ $t('language.english') }}
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
 
         <div v-if="!authStore.isAuthenticated" class="auth-links">
           <RouterLink to="/login" class="nav-link" @click="closeMobileMenu">
             <LoginOutlined />
-            <span>Login</span>
+            <span>{{ $t('nav.login') }}</span>
           </RouterLink>
           <a-button type="primary" @click="router.push('/register'); closeMobileMenu()">
             <UserAddOutlined />
-            Register
+            {{ $t('nav.register') }}
           </a-button>
         </div>
 
@@ -109,12 +143,12 @@ const closeMobileMenu = () => {
               <a-menu>
                 <a-menu-item key="profile">
                   <UserOutlined />
-                  Profile
+                  {{ $t('nav.profile') }}
                 </a-menu-item>
                 <a-menu-divider />
                 <a-menu-item key="logout" @click="handleLogout" danger>
                   <LogoutOutlined />
-                  Logout
+                  {{ $t('nav.logout') }}
                 </a-menu-item>
               </a-menu>
             </template>
@@ -268,6 +302,24 @@ const closeMobileMenu = () => {
   align-items: center;
   gap: 6px;
   font-weight: 500;
+}
+
+.language-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  padding: 8px 12px;
+}
+
+.language-text {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+:deep(.active-lang) {
+  background-color: #e6f7ff;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

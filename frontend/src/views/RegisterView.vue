@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth.store";
 import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined, UserAddOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import type { Rule } from "ant-design-vue/es/form";
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -27,19 +29,19 @@ const loading = ref(false);
 
 const rules: Record<string, Rule[]> = {
   name: [
-    { required: true, message: "Please input your name!", trigger: "blur" },
-    { min: 2, message: "Name must be at least 2 characters!", trigger: "blur" },
+    { required: true, message: t('auth.register.validation.nameRequired'), trigger: "blur" },
+    { min: 2, message: t('auth.register.validation.nameMin'), trigger: "blur" },
   ],
   email: [
-    { required: true, message: "Please input your email!", trigger: "blur" },
-    { type: "email", message: "Please enter a valid email!", trigger: "blur" },
+    { required: true, message: t('auth.register.validation.emailRequired'), trigger: "blur" },
+    { type: "email", message: t('auth.register.validation.emailInvalid'), trigger: "blur" },
   ],
   password: [
-    { required: true, message: "Please input your password!", trigger: "blur" },
-    { min: 6, message: "Password must be at least 6 characters!", trigger: "blur" },
+    { required: true, message: t('auth.register.validation.passwordRequired'), trigger: "blur" },
+    { min: 6, message: t('auth.register.validation.passwordMin'), trigger: "blur" },
   ],
   phone: [
-    { pattern: /^[0-9]{10,11}$/, message: "Please enter a valid phone number!", trigger: "blur" },
+    { pattern: /^[0-9]{10,11}$/, message: t('auth.register.validation.phoneInvalid'), trigger: "blur" },
   ],
 };
 
@@ -50,13 +52,13 @@ const handleSubmit = async () => {
     const result = await authStore.register(formState);
 
     if (result.success) {
-      message.success("Registration successful! Welcome!");
+      message.success(t('auth.register.success'));
       router.push("/");
     } else {
-      message.error(result.message || "Registration failed. Please try again.");
+      message.error(result.message || t('auth.register.failed'));
     }
   } catch (err) {
-    message.error("An error occurred. Please try again.");
+    message.error(t('errors.generic'));
   } finally {
     loading.value = false;
   }
@@ -71,8 +73,8 @@ const handleSubmit = async () => {
           <div class="register-icon">
             <UserAddOutlined />
           </div>
-          <h1>Create Account</h1>
-          <p class="subtitle">Join us and start ordering delicious treats!</p>
+          <h1>{{ $t('auth.register.title') }}</h1>
+          <p class="subtitle">{{ $t('auth.register.subtitle') }}</p>
         </div>
 
         <a-form
@@ -82,11 +84,11 @@ const handleSubmit = async () => {
           @finish="handleSubmit"
           class="register-form"
         >
-          <a-form-item label="Full Name" name="name">
+          <a-form-item :label="$t('auth.register.name')" name="name">
             <a-input
               v-model:value="formState.name"
               size="large"
-              placeholder="Enter your full name"
+              :placeholder="$t('auth.register.namePlaceholder')"
             >
               <template #prefix>
                 <UserOutlined />
@@ -94,11 +96,11 @@ const handleSubmit = async () => {
             </a-input>
           </a-form-item>
 
-          <a-form-item label="Email" name="email">
+          <a-form-item :label="$t('auth.register.email')" name="email">
             <a-input
               v-model:value="formState.email"
               size="large"
-              placeholder="Enter your email"
+              :placeholder="$t('auth.register.emailPlaceholder')"
             >
               <template #prefix>
                 <MailOutlined />
@@ -106,11 +108,11 @@ const handleSubmit = async () => {
             </a-input>
           </a-form-item>
 
-          <a-form-item label="Phone Number" name="phone">
+          <a-form-item :label="$t('auth.register.phone')" name="phone">
             <a-input
               v-model:value="formState.phone"
               size="large"
-              placeholder="Enter your phone number (optional)"
+              :placeholder="$t('auth.register.phonePlaceholder')"
             >
               <template #prefix>
                 <PhoneOutlined />
@@ -118,11 +120,11 @@ const handleSubmit = async () => {
             </a-input>
           </a-form-item>
 
-          <a-form-item label="Password" name="password">
+          <a-form-item :label="$t('auth.register.password')" name="password">
             <a-input-password
               v-model:value="formState.password"
               size="large"
-              placeholder="Create a password (min 6 characters)"
+              :placeholder="$t('auth.register.passwordPlaceholder')"
             >
               <template #prefix>
                 <LockOutlined />
@@ -140,17 +142,17 @@ const handleSubmit = async () => {
               class="register-button"
             >
               <UserAddOutlined v-if="!loading" />
-              {{ loading ? "Creating Account..." : "Create Account" }}
+              {{ loading ? $t('auth.register.creating') : $t('auth.register.createButton') }}
             </a-button>
           </a-form-item>
         </a-form>
 
-        <a-divider>or</a-divider>
+        <a-divider>{{ $t('common.or') }}</a-divider>
 
         <div class="login-link">
-          <span>Already have an account?</span>
+          <span>{{ $t('auth.register.haveAccount') }}</span>
           <a-button type="link" @click="router.push('/login')">
-            Login now
+            {{ $t('auth.register.loginNow') }}
           </a-button>
         </div>
       </a-card>
