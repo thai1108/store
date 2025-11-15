@@ -3,6 +3,7 @@ import { handleCors, addCorsHeaders } from '@/utils/cors';
 import { productRouter } from '@/routes/product.routes';
 import { orderRouter } from '@/routes/order.routes';
 import { userRouter } from '@/routes/user.routes';
+import { cartRouter } from '@/routes/cart.routes';
 
 export default {
   async fetch(request: Request, env: Environment): Promise<Response> {
@@ -25,6 +26,8 @@ export default {
         response = await orderRouter(request, env);
       } else if (segments[0] === 'api' && segments[1] === 'users') {
         response = await userRouter(request, env);
+      } else if (segments[0] === 'api' && segments[1] === 'cart') {
+        response = await cartRouter(request, env);
       } else if (url.pathname === '/api/health') {
         response = new Response(
           JSON.stringify({
@@ -55,6 +58,9 @@ export default {
               'POST /api/users/login',
               'GET /api/users/me',
               'GET /api/users/me/orders',
+              'GET /api/cart/:userId',
+              'POST /api/cart/:userId',
+              'DELETE /api/cart/:userId',
             ],
           }),
           {

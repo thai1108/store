@@ -17,6 +17,14 @@ export interface OrderItem {
   price: number;
 }
 
+export interface CartItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  imageUrl?: string;
+}
+
 export interface CustomerInfo {
   name: string;
   phone: string;

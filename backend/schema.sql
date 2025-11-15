@@ -51,6 +51,22 @@ CREATE TABLE IF NOT EXISTS order_items (
   FOREIGN KEY (productId) REFERENCES products (id)
 );
 
+-- Create cart_items table for persisting user carts
+CREATE TABLE IF NOT EXISTS cart_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  productId TEXT NOT NULL,
+  productName TEXT NOT NULL,
+  quantity INTEGER NOT NULL,
+  price REAL NOT NULL,
+  imageUrl TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users (id),
+  FOREIGN KEY (productId) REFERENCES products (id),
+  UNIQUE(userId, productId)
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_products_category ON products (category);
 CREATE INDEX IF NOT EXISTS idx_products_instock ON products (inStock);
@@ -58,3 +74,4 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
 CREATE INDEX IF NOT EXISTS idx_orders_userid ON orders (userId);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders (status);
 CREATE INDEX IF NOT EXISTS idx_order_items_orderid ON order_items (orderId);
+CREATE INDEX IF NOT EXISTS idx_cart_items_userid ON cart_items (userId);

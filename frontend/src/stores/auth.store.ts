@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { User } from '@/types/auth';
 import { authService } from '@/services/auth-service';
+import { useCartStore } from './cart.store';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
@@ -28,6 +29,10 @@ export const useAuthStore = defineStore('auth', () => {
         
         authService.setAuth(response.token, response.user);
         
+        // Sync cart after successful login
+        const cartStore = useCartStore();
+        await cartStore.syncWithServer(response.user.id);
+        
         return { success: true };
       } else {
         return { success: false, message: response.message };
@@ -48,6 +53,10 @@ export const useAuthStore = defineStore('auth', () => {
         
         authService.setAuth(response.token, response.user);
         
+        // Sync cart after successful registration
+        const cartStore = useCartStore();
+        await cartStore.syncWithServer(response.user.id);
+        
         return { success: true };
       } else {
         return { success: false, message: response.message };
@@ -58,10 +67,21 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const logout = () => {
+    // Save cart to server before logout if authenticated
+    const cartStore = useCartStore();
+    if (user.value && cartStore.items.length > 0) {
+      cartStore.saveToServer(user.value.id).catch(console.error);
+    }
+    
     user.value = null;
     token.value = null;
     isAuthenticated.value = false;
     authService.logout();
+    
+    // Clear current user ID and reload cart from localStorage
+    cartStore.setUserId(null);
+    cartStore.clearCart();
+    cartStore.loadFromLocalStorage();
   };
 
   const isAdmin = computed(() => {
