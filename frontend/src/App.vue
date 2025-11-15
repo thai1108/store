@@ -2,12 +2,23 @@
 import { RouterView } from "vue-router";
 import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth.store";
+import { useCartStore } from "@/stores/cart.store";
 import NavBar from "@/components/NavBar.vue";
 
 const authStore = useAuthStore();
+const cartStore = useCartStore();
 
-onMounted(() => {
+onMounted(async () => {
   authStore.initAuth();
+  
+  // If user is authenticated, load cart from server instead of localStorage
+  if (authStore.isAuthenticated && authStore.user) {
+    cartStore.setUserId(authStore.user.id);
+    const serverItems = await cartStore.loadFromServer();
+    // Replace items with server data
+    cartStore.items.splice(0, cartStore.items.length, ...serverItems);
+  }
+  // Otherwise, cart is already loaded from localStorage in store initialization
 });
 </script>
 

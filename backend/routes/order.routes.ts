@@ -1,6 +1,7 @@
 import { Environment } from '@/types/common';
 import { orderService } from '@/services/order.service';
 import { CreateOrderRequest } from '@/types/order';
+import { authenticateRequest, createUnauthorizedResponse } from '@/utils/auth';
 
 export const orderRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -10,8 +11,22 @@ export const orderRouter = async (request: Request, env: Environment): Promise<R
   try {
     // POST /api/orders - Create new order
     if (method === 'POST' && segments.length === 2) {
+      // Authenticate user
+      const authResult = await authenticateRequest(request, env);
+      
+      if (!authResult.authenticated || !authResult.userId) {
+        return createUnauthorizedResponse(authResult.error);
+      }
+
       const data: CreateOrderRequest = await request.json();
-      const result = await orderService.create(env, data);
+      
+      // Use userId from token, not from payload
+      const orderData: CreateOrderRequest = {
+        ...data,
+        userId: authResult.userId,
+      };
+      
+      const result = await orderService.create(env, orderData);
       
       return new Response(JSON.stringify(result), {
         status: result.success ? 201 : 400,
@@ -33,8 +48,8 @@ export const orderRouter = async (request: Request, env: Environment): Promise<R
     // PUT /api/orders/:id/status - Update order status
     if (method === 'PUT' && segments.length === 4 && segments[3] === 'status') {
       const id = segments[2];
-      const { status } = await request.json();
-      const result = await orderService.updateStatus(env, id, status);
+      const body = await request.json() as { status: 'pending' | 'confirmed' | 'completed' | 'cancelled' };
+      const result = await orderService.updateStatus(env, id, body.status);
       
       return new Response(JSON.stringify(result), {
         status: result.success ? 200 : 400,

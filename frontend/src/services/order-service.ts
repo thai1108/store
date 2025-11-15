@@ -12,7 +12,6 @@ export const orderService = {
       address?: string;
     };
     notes?: string;
-    userId?: string;
   }): Promise<ApiResponse<Order>> {
     const response = await api.post('/orders', data);
     return response.data;

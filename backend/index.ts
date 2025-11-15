@@ -58,9 +58,9 @@ export default {
               'POST /api/users/login',
               'GET /api/users/me',
               'GET /api/users/me/orders',
-              'GET /api/cart/:userId',
-              'POST /api/cart/:userId',
-              'DELETE /api/cart/:userId',
+              'GET /api/cart',
+              'POST /api/cart',
+              'DELETE /api/cart',
             ],
           }),
           {

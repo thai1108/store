@@ -39,26 +39,35 @@ export const useCartStore = defineStore('cart', () => {
     currentUserId.value = userId;
   };
 
-  // Watch for changes and save to localStorage
+  // Watch for changes and save appropriately
   watch(items, () => {
     if (isLoadedFromStorage.value) {
-      saveToLocalStorage();
-      
-      // Also save to server if user is authenticated
+      // If user is authenticated, only save to server
       if (currentUserId.value) {
-        saveToServer(currentUserId.value).catch(console.error);
+        saveToServer().catch(console.error);
+      } else {
+        // If not authenticated, save to localStorage
+        saveToLocalStorage();
       }
     }
   }, { deep: true });
 
   // Load from server for authenticated users
-  const loadFromServer = async (userId: string) => {
+  const loadFromServer = async () => {
     try {
-      const response = await fetch(`/api/cart/${userId}`, {
+      const response = await fetch(`/api/cart`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
       });
+      
+      if (response.status === 401) {
+        // Token is invalid, clear it and switch to guest mode
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        currentUserId.value = null;
+        return [];
+      }
       
       if (response.ok) {
         const data = await response.json();
@@ -73,16 +82,24 @@ export const useCartStore = defineStore('cart', () => {
   };
 
   // Save to server for authenticated users
-  const saveToServer = async (userId: string) => {
+  const saveToServer = async () => {
     try {
-      const response = await fetch(`/api/cart/${userId}`, {
+      const response = await fetch(`/api/cart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({ items: items.value }),
       });
+      
+      if (response.status === 401) {
+        // Token is invalid, clear it and switch to guest mode
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        currentUserId.value = null;
+        return;
+      }
       
       if (!response.ok) {
         console.error('Failed to save cart to server');
@@ -119,13 +136,13 @@ export const useCartStore = defineStore('cart', () => {
   // Sync cart with server when user logs in
   const syncWithServer = async (userId: string) => {
     setUserId(userId);
-    const serverItems = await loadFromServer(userId);
+    const serverItems = await loadFromServer();
     
     if (items.value.length > 0) {
       // Merge local cart with server cart
       mergeWithServerCart(serverItems);
       // Save merged cart to server
-      await saveToServer(userId);
+      await saveToServer();
     } else {
       // Just load from server
       items.value = serverItems;
@@ -171,8 +188,10 @@ export const useCartStore = defineStore('cart', () => {
 
   const clearCart = () => {
     items.value = [];
-    localStorage.removeItem(CART_STORAGE_KEY);
-    currentUserId.value = null;
+    if (!currentUserId.value) {
+      // Only clear localStorage if not authenticated
+      localStorage.removeItem(CART_STORAGE_KEY);
+    }
   };
 
   const totalAmount = computed(() => {
@@ -183,7 +202,7 @@ export const useCartStore = defineStore('cart', () => {
     return items.value.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
   });
 
-  // Initialize: load from localStorage
+  // Initialize: load from localStorage only (server load happens in App.vue after auth check)
   loadFromLocalStorage();
 
   return {
@@ -196,6 +215,7 @@ export const useCartStore = defineStore('cart', () => {
     totalItems,
     syncWithServer,
     saveToServer,
+    loadFromServer,
     loadFromLocalStorage,
     setUserId,
   };

@@ -64,7 +64,6 @@ const handleSubmit = async () => {
         address: form.value.address || undefined,
       },
       notes: form.value.notes || undefined,
-      userId: authStore.isAuthenticated ? authStore.user?.id : undefined,
     };
 
     const result = await orderService.create(orderData);

@@ -16,4 +16,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle 401 errors - clear invalid token
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired, clear it
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      
+      // Reload page to reset auth state
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
