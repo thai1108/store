@@ -71,19 +71,23 @@ export const orderRepository = {
         .run();
     }
 
-    // Cache order in KV for quick access
-    await env.ORDER_CACHE.put(`order_${order.id}`, JSON.stringify(order), {
-      expirationTtl: 24 * 60 * 60, // 24 hours
-    });
+    // Cache order in KV for quick access (if available)
+    if (env.ORDER_CACHE) {
+      await env.ORDER_CACHE.put(`order_${order.id}`, JSON.stringify(order), {
+        expirationTtl: 24 * 60 * 60, // 24 hours
+      });
+    }
 
     return order;
   },
 
   async getById(env: Environment, id: string): Promise<Order | null> {
-    // Try cache first
-    const cached = await env.ORDER_CACHE.get(`order_${id}`);
-    if (cached) {
-      return JSON.parse(cached) as Order;
+    // Try cache first (if available)
+    if (env.ORDER_CACHE) {
+      const cached = await env.ORDER_CACHE.get(`order_${id}`);
+      if (cached) {
+        return JSON.parse(cached) as Order;
+      }
     }
 
     // Fallback to database
@@ -113,10 +117,12 @@ export const orderRepository = {
       updatedAt: orderResult.updatedAt as string,
     };
 
-    // Cache for future requests
-    await env.ORDER_CACHE.put(`order_${id}`, JSON.stringify(order), {
-      expirationTtl: 24 * 60 * 60,
-    });
+    // Cache for future requests (if available)
+    if (env.ORDER_CACHE) {
+      await env.ORDER_CACHE.put(`order_${id}`, JSON.stringify(order), {
+        expirationTtl: 24 * 60 * 60,
+      });
+    }
 
     return order;
   },
@@ -173,10 +179,12 @@ export const orderRepository = {
       updatedAt,
     };
 
-    // Update cache
-    await env.ORDER_CACHE.put(`order_${id}`, JSON.stringify(updatedOrder), {
-      expirationTtl: 24 * 60 * 60,
-    });
+    // Update cache (if available)
+    if (env.ORDER_CACHE) {
+      await env.ORDER_CACHE.put(`order_${id}`, JSON.stringify(updatedOrder), {
+        expirationTtl: 24 * 60 * 60,
+      });
+    }
 
     return updatedOrder;
   },
