@@ -24,7 +24,12 @@ export const productRouter = async (request: Request, env: Environment): Promise
       const maxPrice = url.searchParams.get('maxPrice');
       if (maxPrice) {filter.maxPrice = parseFloat(maxPrice);}
 
-      const result = await productService.getAll(env, filter);
+      const cursor = url.searchParams.get('cursor') || undefined;
+      const limit = url.searchParams.get('limit') 
+        ? parseInt(url.searchParams.get('limit')!) 
+        : undefined;
+
+      const result = await productService.getAll(env, filter, { cursor, limit });
       return new Response(JSON.stringify(result), {
         headers: { 'Content-Type': 'application/json' },
       });

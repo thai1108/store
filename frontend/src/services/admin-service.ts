@@ -4,15 +4,32 @@ import { Order } from '@/types/order';
 import { User } from '@/types/auth';
 import { Product } from '@/types/product';
 
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+    limit: number;
+  };
+  message?: string;
+}
+
 export const adminService = {
   // Product Management
-  async getAllProducts(): Promise<ApiResponse<Product[]>> {
+  async getAllProducts(cursor?: string, limit?: number): Promise<PaginatedResponse<Product>> {
     try {
-      const response = await api.get<ApiResponse<Product[]>>('/admin/products');
+      const params = new URLSearchParams();
+      if (cursor) params.append('cursor', cursor);
+      if (limit) params.append('limit', limit.toString());
+
+      const response = await api.get<PaginatedResponse<Product>>(`/admin/products?${params.toString()}`);
       return response.data;
     } catch (error: any) {
       return {
         success: false,
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, limit: 20 },
         message: error.response?.data?.message || 'Failed to fetch products',
       };
     }
@@ -55,13 +72,19 @@ export const adminService = {
   },
 
   // Order Management
-  async getAllOrders(): Promise<ApiResponse<Order[]>> {
+  async getAllOrders(cursor?: string, limit?: number): Promise<PaginatedResponse<Order>> {
     try {
-      const response = await api.get<ApiResponse<Order[]>>('/admin/orders');
+      const params = new URLSearchParams();
+      if (cursor) params.append('cursor', cursor);
+      if (limit) params.append('limit', limit.toString());
+
+      const response = await api.get<PaginatedResponse<Order>>(`/admin/orders?${params.toString()}`);
       return response.data;
     } catch (error: any) {
       return {
         success: false,
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, limit: 20 },
         message: error.response?.data?.message || 'Failed to fetch orders',
       };
     }

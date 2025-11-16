@@ -77,7 +77,12 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
         });
       }
 
-      const result = await orderService.getUserOrders(env, user.id);
+      const cursor = url.searchParams.get('cursor') || undefined;
+      const limit = url.searchParams.get('limit') 
+        ? parseInt(url.searchParams.get('limit')!) 
+        : undefined;
+
+      const result = await orderService.getUserOrders(env, user.id, { cursor, limit });
       
       return new Response(JSON.stringify(result), {
         status: result.success ? 200 : 400,

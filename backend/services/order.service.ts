@@ -2,6 +2,7 @@ import { Order, CreateOrderRequest } from '@/types/order';
 import { Environment, ApiResponse } from '@/types/common';
 import { orderRepository } from '@/repositories/order.repository';
 import { createSuccessResponse, createErrorResponse, validateEmail, validatePhone } from '@/utils/helpers';
+import { CursorPaginationParams, PaginatedResponse } from '@/utils/pagination';
 
 export const orderService = {
   async create(env: Environment, data: CreateOrderRequest): Promise<ApiResponse<Order>> {
@@ -59,17 +60,40 @@ export const orderService = {
     }
   },
 
-  async getUserOrders(env: Environment, userId: string): Promise<ApiResponse<Order[]>> {
+  async getUserOrders(
+    env: Environment, 
+    userId: string,
+    pagination?: CursorPaginationParams,
+  ): Promise<PaginatedResponse<Order>> {
     try {
       if (!userId) {
-        return createErrorResponse('User ID is required');
+        return {
+          success: false,
+          data: [],
+          pagination: { nextCursor: null, hasMore: false, limit: 20 },
+          message: 'User ID is required',
+        };
       }
 
-      const orders = await orderRepository.getByUserId(env, userId);
-      return createSuccessResponse(orders);
+      const result = await orderRepository.getUserOrders(env, userId, pagination);
+      
+      return {
+        success: true,
+        data: result.data,
+        pagination: {
+          nextCursor: result.nextCursor,
+          hasMore: result.hasMore,
+          limit: pagination?.limit || 20,
+        },
+      };
     } catch (error) {
       console.error('Error fetching user orders:', error);
-      return createErrorResponse('Failed to fetch user orders');
+      return {
+        success: false,
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, limit: 20 },
+        message: 'Failed to fetch user orders',
+      };
     }
   },
 
@@ -95,13 +119,30 @@ export const orderService = {
     }
   },
 
-  async getAll(env: Environment): Promise<ApiResponse<Order[]>> {
+  async getAll(
+    env: Environment,
+    pagination?: CursorPaginationParams,
+  ): Promise<PaginatedResponse<Order>> {
     try {
-      const orders = await orderRepository.getAll(env);
-      return createSuccessResponse(orders);
+      const result = await orderRepository.getAll(env, pagination);
+      
+      return {
+        success: true,
+        data: result.data,
+        pagination: {
+          nextCursor: result.nextCursor,
+          hasMore: result.hasMore,
+          limit: pagination?.limit || 20,
+        },
+      };
     } catch (error) {
       console.error('Error fetching all orders:', error);
-      return createErrorResponse('Failed to fetch orders');
+      return {
+        success: false,
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, limit: 20 },
+        message: 'Failed to fetch orders',
+      };
     }
   },
 };

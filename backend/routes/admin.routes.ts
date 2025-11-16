@@ -30,7 +30,12 @@ export const adminRouter = async (request: Request, env: Environment): Promise<R
 
     // GET /api/admin/products - Get all products
     if (method === 'GET' && segments[2] === 'products' && segments.length === 3) {
-      const result = await productService.getAll(env, {});
+      const cursor = url.searchParams.get('cursor') || undefined;
+      const limit = url.searchParams.get('limit') 
+        ? parseInt(url.searchParams.get('limit')!) 
+        : undefined;
+
+      const result = await productService.getAll(env, {}, { cursor, limit });
       return new Response(JSON.stringify(result), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -74,7 +79,12 @@ export const adminRouter = async (request: Request, env: Environment): Promise<R
 
     // GET /api/admin/orders - Get all orders
     if (method === 'GET' && segments[2] === 'orders' && segments.length === 3) {
-      const result = await orderService.getAll(env);
+      const cursor = url.searchParams.get('cursor') || undefined;
+      const limit = url.searchParams.get('limit') 
+        ? parseInt(url.searchParams.get('limit')!) 
+        : undefined;
+
+      const result = await orderService.getAll(env, { cursor, limit });
       
       return new Response(JSON.stringify(result), {
         status: result.success ? 200 : 400,

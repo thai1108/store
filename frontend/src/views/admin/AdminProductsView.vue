@@ -7,7 +7,17 @@ import ProductTable from '@/components/admin/ProductTable.vue';
 import ProductModal from '@/components/admin/ProductModal.vue';
 
 const { t } = useI18n();
-const { products, loading, fetchProducts, createProduct, updateProduct, deleteProduct } = useProducts();
+const { 
+  products, 
+  loading, 
+  loadingMore,
+  hasMore,
+  fetchProducts, 
+  loadMore,
+  createProduct, 
+  updateProduct, 
+  deleteProduct 
+} = useProducts();
 
 const showModal = ref(false);
 const editingProduct = ref<Product | null>(null);
@@ -69,6 +79,16 @@ onMounted(() => {
       @delete="handleDelete"
     />
 
+    <div v-if="hasMore" class="load-more-container">
+      <button 
+        class="btn btn-secondary" 
+        :disabled="loadingMore"
+        @click="loadMore"
+      >
+        {{ loadingMore ? $t('common.loading') : $t('common.loadMore') }}
+      </button>
+    </div>
+
     <ProductModal
       :show="showModal"
       :product="editingProduct"
@@ -115,6 +135,21 @@ onMounted(() => {
 
 .btn-primary:hover {
   background: #3182ce;
+}
+
+.btn-secondary:hover {
+  background: #4a5568;
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.load-more-container .btn {
+  min-width: 150px;
 }
 
 @media (max-width: 768px) {

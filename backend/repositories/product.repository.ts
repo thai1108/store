@@ -1,44 +1,86 @@
+import { eq, and, gte, lte, desc, lt } from 'drizzle-orm';
+import { getDb, schema } from '@/db';
 import { Product, CreateProductRequest, ProductFilter } from '@/types/product';
 import { Environment } from '@/types/common';
 import { generateId, getCurrentTimestamp } from '@/utils/helpers';
+import { 
+  CursorPaginationParams, 
+  CursorPaginationResult,
+  decodeCursor,
+  encodeCursor,
+  getLimit,
+} from '@/utils/pagination';
 
 export const productRepository = {
-  async getAll(env: Environment, filter?: ProductFilter): Promise<Product[]> {
-    let query = 'SELECT * FROM products WHERE 1=1';
-    const params: any[] = [];
-
+  async getAll(
+    env: Environment, 
+    filter?: ProductFilter,
+    pagination?: CursorPaginationParams,
+  ): Promise<CursorPaginationResult<Product>> {
+    const db = getDb(env);
+    const limit = getLimit(pagination?.limit) + 1;
+    
+    const conditions = [];
+    
     if (filter?.category) {
-      query += ' AND category = ?';
-      params.push(filter.category);
+      conditions.push(eq(schema.products.category, filter.category as any));
     }
-
+    
     if (filter?.inStock !== undefined) {
-      query += ' AND inStock = ?';
-      params.push(filter.inStock ? 1 : 0);
+      conditions.push(eq(schema.products.inStock, filter.inStock));
     }
-
+    
     if (filter?.minPrice !== undefined) {
-      query += ' AND price >= ?';
-      params.push(filter.minPrice);
+      conditions.push(gte(schema.products.price, filter.minPrice));
     }
-
+    
     if (filter?.maxPrice !== undefined) {
-      query += ' AND price <= ?';
-      params.push(filter.maxPrice);
+      conditions.push(lte(schema.products.price, filter.maxPrice));
     }
 
-    query += ' ORDER BY createdAt DESC';
+    if (pagination?.cursor) {
+      const decoded = decodeCursor(pagination.cursor);
+      if (decoded) {
+        conditions.push(lt(schema.products.createdAt, decoded.createdAt));
+      }
+    }
 
-    const result = await env.DB.prepare(query).bind(...params).all();
-    return result.results as Product[];
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const results = await db
+      .select()
+      .from(schema.products)
+      .where(whereClause)
+      .orderBy(desc(schema.products.createdAt))
+      .limit(limit);
+
+    const hasMore = results.length > limit - 1;
+    const data = hasMore ? results.slice(0, -1) : results;
+    
+    const nextCursor = hasMore && data.length > 0
+      ? encodeCursor(data[data.length - 1].id, data[data.length - 1].createdAt)
+      : null;
+
+    return {
+      data: data as Product[],
+      nextCursor,
+      hasMore,
+    };
   },
 
   async getById(env: Environment, id: string): Promise<Product | null> {
-    const result = await env.DB.prepare('SELECT * FROM products WHERE id = ?').bind(id).first();
-    return result as Product | null;
+    const db = getDb(env);
+    const result = await db
+      .select()
+      .from(schema.products)
+      .where(eq(schema.products.id, id))
+      .limit(1);
+
+    return result[0] as Product | null;
   },
 
   async create(env: Environment, data: CreateProductRequest): Promise<Product> {
+    const db = getDb(env);
     const id = generateId();
     const now = getCurrentTimestamp();
 
@@ -49,60 +91,38 @@ export const productRepository = {
       updatedAt: now,
     };
 
-    await env.DB.prepare(
-      `INSERT INTO products (id, name, description, price, category, imageUrl, inStock, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-      .bind(
-        product.id,
-        product.name,
-        product.description,
-        product.price,
-        product.category,
-        product.imageUrl || null,
-        product.inStock ? 1 : 0,
-        product.createdAt,
-        product.updatedAt,
-      )
-      .run();
+    await db.insert(schema.products).values(product);
 
     return product;
   },
 
   async update(env: Environment, id: string, data: Partial<Product>): Promise<Product | null> {
+    const db = getDb(env);
     const existing = await this.getById(env, id);
+    
     if (!existing) {
       return null;
     }
 
     const updatedProduct = {
-      ...existing,
       ...data,
-      id,
       updatedAt: getCurrentTimestamp(),
     };
 
-    await env.DB.prepare(
-      `UPDATE products SET name = ?, description = ?, price = ?, category = ?, 
-       imageUrl = ?, inStock = ?, updatedAt = ? WHERE id = ?`,
-    )
-      .bind(
-        updatedProduct.name,
-        updatedProduct.description,
-        updatedProduct.price,
-        updatedProduct.category,
-        updatedProduct.imageUrl || null,
-        updatedProduct.inStock ? 1 : 0,
-        updatedProduct.updatedAt,
-        id,
-      )
-      .run();
+    await db
+      .update(schema.products)
+      .set(updatedProduct)
+      .where(eq(schema.products.id, id));
 
-    return updatedProduct;
+    return { ...existing, ...updatedProduct } as Product;
   },
 
   async delete(env: Environment, id: string): Promise<boolean> {
-    const result = await env.DB.prepare('DELETE FROM products WHERE id = ?').bind(id).run();
-    return result.changes > 0;
+    const db = getDb(env);
+    const result = await db
+      .delete(schema.products)
+      .where(eq(schema.products.id, id));
+
+    return (result as any).changes > 0;
   },
 };

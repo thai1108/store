@@ -7,7 +7,15 @@ import OrderTable from '@/components/admin/OrderTable.vue';
 import OrderModal from '@/components/admin/OrderModal.vue';
 
 const { t } = useI18n();
-const { orders, loading, fetchOrders, updateOrderStatus } = useOrders();
+const { 
+  orders, 
+  loading,
+  loadingMore,
+  hasMore,
+  fetchOrders,
+  loadMore,
+  updateOrderStatus 
+} = useOrders();
 
 const showModal = ref(false);
 const selectedOrder = ref<Order | null>(null);
@@ -46,6 +54,16 @@ onMounted(() => {
       @view="handleView"
     />
 
+    <div v-if="hasMore" class="load-more-container">
+      <button 
+        class="btn btn-secondary" 
+        :disabled="loadingMore"
+        @click="loadMore"
+      >
+        {{ loadingMore ? $t('common.loading') : $t('common.loadMore') }}
+      </button>
+    </div>
+
     <OrderModal
       :show="showModal"
       :order="selectedOrder"
@@ -71,6 +89,46 @@ onMounted(() => {
   font-size: 1.5rem;
   color: #2d3748;
   margin: 0;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin: 0;
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.load-more-container .btn {
+  min-width: 150px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-secondary {
+  background: #718096;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #4a5568;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

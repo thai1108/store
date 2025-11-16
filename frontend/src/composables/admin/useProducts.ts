@@ -1,27 +1,31 @@
 import { ref } from 'vue';
 import { adminService } from '@/services/admin-service';
 import { Product, CreateProductRequest } from '@/types/product';
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
 
 export const useProducts = () => {
-  const products = ref<Product[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
+  const {
+    items: products,
+    loading: loadingMore,
+    hasMore,
+    loadMore,
+    refresh,
+  } = useInfiniteScroll<Product>({
+    fetchFn: async (cursor) => {
+      const response = await adminService.getAllProducts(cursor);
+      return {
+        data: response.data,
+        pagination: response.pagination,
+      };
+    },
+    limit: 20,
+  });
+
   const fetchProducts = async () => {
-    loading.value = true;
-    error.value = null;
-    try {
-      const response = await adminService.getAllProducts();
-      if (response.success && response.data) {
-        products.value = response.data;
-      } else {
-        error.value = response.message || 'Failed to fetch products';
-      }
-    } catch (err) {
-      error.value = 'An error occurred while fetching products';
-    } finally {
-      loading.value = false;
-    }
+    await refresh();
   };
 
   const createProduct = async (data: CreateProductRequest) => {
@@ -30,7 +34,7 @@ export const useProducts = () => {
     try {
       const response = await adminService.createProduct(data);
       if (response.success) {
-        await fetchProducts();
+        await refresh();
         return { success: true };
       } else {
         error.value = response.message || 'Failed to create product';
@@ -50,7 +54,7 @@ export const useProducts = () => {
     try {
       const response = await adminService.updateProduct(id, data);
       if (response.success) {
-        await fetchProducts();
+        await refresh();
         return { success: true };
       } else {
         error.value = response.message || 'Failed to update product';
@@ -70,7 +74,7 @@ export const useProducts = () => {
     try {
       const response = await adminService.deleteProduct(id);
       if (response.success) {
-        await fetchProducts();
+        await refresh();
         return { success: true };
       } else {
         error.value = response.message || 'Failed to delete product';
@@ -87,8 +91,11 @@ export const useProducts = () => {
   return {
     products,
     loading,
+    loadingMore,
+    hasMore,
     error,
     fetchProducts,
+    loadMore,
     createProduct,
     updateProduct,
     deleteProduct,

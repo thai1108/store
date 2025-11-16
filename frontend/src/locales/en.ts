@@ -2,6 +2,7 @@ export default {
   common: {
     appName: 'TeaStore',
     loading: 'Loading...',
+    loadMore: 'Load More',
     error: 'Error',
     success: 'Success',
     cancel: 'Cancel',

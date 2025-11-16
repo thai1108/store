@@ -2,6 +2,7 @@ export default {
   common: {
     appName: 'TeaStore',
     loading: 'Đang tải...',
+    loadMore: 'Tải thêm',
     error: 'Lỗi',
     success: 'Thành công',
     cancel: 'Hủy',

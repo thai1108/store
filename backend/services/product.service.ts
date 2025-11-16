@@ -2,15 +2,34 @@ import { Product, CreateProductRequest, UpdateProductRequest, ProductFilter } fr
 import { Environment, ApiResponse } from '@/types/common';
 import { productRepository } from '@/repositories/product.repository';
 import { createSuccessResponse, createErrorResponse } from '@/utils/helpers';
+import { CursorPaginationParams, PaginatedResponse } from '@/utils/pagination';
 
 export const productService = {
-  async getAll(env: Environment, filter?: ProductFilter): Promise<ApiResponse<Product[]>> {
+  async getAll(
+    env: Environment, 
+    filter?: ProductFilter,
+    pagination?: CursorPaginationParams,
+  ): Promise<PaginatedResponse<Product>> {
     try {
-      const products = await productRepository.getAll(env, filter);
-      return createSuccessResponse(products);
+      const result = await productRepository.getAll(env, filter, pagination);
+      
+      return {
+        success: true,
+        data: result.data,
+        pagination: {
+          nextCursor: result.nextCursor,
+          hasMore: result.hasMore,
+          limit: pagination?.limit || 20,
+        },
+      };
     } catch (error) {
       console.error('Error fetching products:', error);
-      return createErrorResponse('Failed to fetch products');
+      return {
+        success: false,
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, limit: 20 },
+        message: 'Failed to fetch products',
+      };
     }
   },
 

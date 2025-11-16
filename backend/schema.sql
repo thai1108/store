@@ -1,6 +1,6 @@
 -- Create products table
 CREATE TABLE IF NOT EXISTS products (
-  id TEXT PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   description TEXT,
   price REAL NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS products (
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   phone TEXT,
@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create orders table
 CREATE TABLE IF NOT EXISTS orders (
-  id TEXT PRIMARY KEY,
-  userId TEXT,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId INTEGER,
   totalAmount REAL NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
   customerName TEXT NOT NULL,
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS orders (
 -- Create order_items table
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  orderId TEXT NOT NULL,
-  productId TEXT NOT NULL,
+  orderId INTEGER NOT NULL,
+  productId INTEGER NOT NULL,
   productName TEXT NOT NULL,
   quantity INTEGER NOT NULL,
   price REAL NOT NULL,
@@ -56,8 +56,8 @@ CREATE TABLE IF NOT EXISTS order_items (
 -- Create cart_items table for persisting user carts
 CREATE TABLE IF NOT EXISTS cart_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  userId TEXT NOT NULL,
-  productId TEXT NOT NULL,
+  userId INTEGER NOT NULL,
+  productId INTEGER NOT NULL,
   productName TEXT NOT NULL,
   quantity INTEGER NOT NULL,
   price REAL NOT NULL,
