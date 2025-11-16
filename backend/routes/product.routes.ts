@@ -1,6 +1,6 @@
 import { Environment } from '@/types/common';
 import { productService } from '@/services/product.service';
-import { CreateProductRequest, UpdateProductRequest, ProductFilter } from '@/types/product';
+import { ProductFilter } from '@/types/product';
 
 export const productRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -8,7 +8,7 @@ export const productRouter = async (request: Request, env: Environment): Promise
   const method = request.method;
 
   try {
-    // GET /api/products - Get all products with optional filters
+    // GET /api/products - Get all products with optional filters (public)
     if (method === 'GET' && segments.length === 2) {
       const filter: ProductFilter = {};
       
@@ -30,7 +30,7 @@ export const productRouter = async (request: Request, env: Environment): Promise
       });
     }
 
-    // GET /api/products/:id - Get product by ID
+    // GET /api/products/:id - Get product by ID (public)
     if (method === 'GET' && segments.length === 3) {
       const id = segments[2];
       const result = await productService.getById(env, id);
@@ -41,49 +41,19 @@ export const productRouter = async (request: Request, env: Environment): Promise
       });
     }
 
-    // POST /api/products - Create new product
-    if (method === 'POST' && segments.length === 2) {
-      const data: CreateProductRequest = await request.json();
-      const result = await productService.create(env, data);
-      
-      return new Response(JSON.stringify(result), {
-        status: result.success ? 201 : 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // PUT /api/products/:id - Update product
-    if (method === 'PUT' && segments.length === 3) {
-      const id = segments[2];
-      const data: Partial<UpdateProductRequest> = await request.json();
-      const updateData: UpdateProductRequest = { ...data, id };
-      
-      const result = await productService.update(env, updateData);
-      
-      return new Response(JSON.stringify(result), {
-        status: result.success ? 200 : 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // DELETE /api/products/:id - Delete product
-    if (method === 'DELETE' && segments.length === 3) {
-      const id = segments[2];
-      const result = await productService.delete(env, id);
-      
-      return new Response(JSON.stringify(result), {
-        status: result.success ? 200 : 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify({ success: false, message: 'Not found' }), {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      message: 'Not found' 
+    }), {
       status: 404,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in product router:', error);
-    return new Response(JSON.stringify({ success: false, message: 'Internal server error' }), {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      message: 'Internal server error' 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

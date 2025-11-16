@@ -3,8 +3,6 @@ import { authService } from '@/services/auth.service';
 import { orderService } from '@/services/order.service';
 import { AuthRequest, RegisterRequest } from '@/types/auth';
 import { createUploadService } from '@/utils/upload';
-import { userRepository } from '@/repositories/user.repository';
-import { authenticateRequest, createUnauthorizedResponse } from '@/utils/auth';
 
 export const userRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -12,30 +10,7 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
   const method = request.method;
 
   try {
-    // GET /api/users - Get all users (admin only)
-    if (method === 'GET' && segments.length === 2) {
-      const authResult = await authenticateRequest(request, env);
-      
-      if (!authResult.authenticated || !authResult.user) {
-        return createUnauthorizedResponse(authResult.error);
-      }
-
-      // Check if user is admin
-      if (authResult.user.role !== 'admin') {
-        return new Response(JSON.stringify({ success: false, message: 'Forbidden: Admin access required' }), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      const users = await userRepository.getAll(env);
-      
-      return new Response(JSON.stringify({ success: true, data: users }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // POST /api/users/register - Register new user
+    // POST /api/users/register - Register new user (public)
     if (method === 'POST' && segments.length === 3 && segments[2] === 'register') {
       const data: RegisterRequest = await request.json();
       const result = await authService.register(env, data);
@@ -46,7 +21,7 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
       });
     }
 
-    // POST /api/users/login - User login
+    // POST /api/users/login - User login (public)
     if (method === 'POST' && segments.length === 3 && segments[2] === 'login') {
       const data: AuthRequest = await request.json();
       const result = await authService.login(env, data);
@@ -57,7 +32,7 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
       });
     }
 
-    // GET /api/users/me - Get current user info
+    // GET /api/users/me - Get current user info (authenticated)
     if (method === 'GET' && segments.length === 3 && segments[2] === 'me') {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -82,7 +57,7 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
       });
     }
 
-    // GET /api/users/me/orders - Get user's order history
+    // GET /api/users/me/orders - Get user's order history (authenticated)
     if (method === 'GET' && segments.length === 4 && segments[2] === 'me' && segments[3] === 'orders') {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -110,7 +85,7 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
       });
     }
 
-    // PUT /api/users/me - Update user profile
+    // PUT /api/users/me - Update user profile (authenticated)
     if (method === 'PUT' && segments.length === 3 && segments[2] === 'me') {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -149,7 +124,7 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
       });
     }
 
-    // POST /api/users/me/avatar - Upload avatar
+    // POST /api/users/me/avatar - Upload avatar (authenticated)
     if (method === 'POST' && segments.length === 4 && segments[2] === 'me' && segments[3] === 'avatar') {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {

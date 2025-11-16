@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { productService } from '@/services/product-service';
+import { adminService } from '@/services/admin-service';
 import { Product, CreateProductRequest } from '@/types/product';
 
 export const useProducts = () => {
@@ -11,7 +11,7 @@ export const useProducts = () => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await productService.getAll();
+      const response = await adminService.getAllProducts();
       if (response.success && response.data) {
         products.value = response.data;
       } else {
@@ -28,7 +28,7 @@ export const useProducts = () => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await productService.create(data);
+      const response = await adminService.createProduct(data);
       if (response.success) {
         await fetchProducts();
         return { success: true };
@@ -48,7 +48,7 @@ export const useProducts = () => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await productService.update(id, data);
+      const response = await adminService.updateProduct(id, data);
       if (response.success) {
         await fetchProducts();
         return { success: true };
@@ -68,7 +68,7 @@ export const useProducts = () => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await productService.delete(id);
+      const response = await adminService.deleteProduct(id);
       if (response.success) {
         await fetchProducts();
         return { success: true };

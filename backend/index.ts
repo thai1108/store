@@ -5,6 +5,7 @@ import { orderRouter } from '@/routes/order.routes';
 import { userRouter } from '@/routes/user.routes';
 import { cartRouter } from '@/routes/cart.routes';
 import { storageRouter } from '@/routes/storage.routes';
+import { adminRouter } from '@/routes/admin.routes';
 
 export default {
   async fetch(request: Request, env: Environment): Promise<Response> {
@@ -21,7 +22,9 @@ export default {
 
     try {
       // Route to appropriate handler
-      if (segments[0] === 'api' && segments[1] === 'products') {
+      if (segments[0] === 'api' && segments[1] === 'admin') {
+        response = await adminRouter(request, env);
+      } else if (segments[0] === 'api' && segments[1] === 'products') {
         response = await productRouter(request, env);
       } else if (segments[0] === 'api' && segments[1] === 'orders') {
         response = await orderRouter(request, env);
@@ -50,13 +53,9 @@ export default {
             availableEndpoints: [
               'GET /api/health',
               'GET /api/products',
-              'POST /api/products',
               'GET /api/products/:id',
-              'PUT /api/products/:id',
-              'DELETE /api/products/:id',
               'POST /api/orders',
               'GET /api/orders/:id',
-              'PUT /api/orders/:id/status',
               'POST /api/users/register',
               'POST /api/users/login',
               'GET /api/users/me',
@@ -64,6 +63,13 @@ export default {
               'GET /api/cart',
               'POST /api/cart',
               'DELETE /api/cart',
+              'GET /api/admin/products (admin)',
+              'POST /api/admin/products (admin)',
+              'PUT /api/admin/products/:id (admin)',
+              'DELETE /api/admin/products/:id (admin)',
+              'GET /api/admin/orders (admin)',
+              'PUT /api/admin/orders/:id/status (admin)',
+              'GET /api/admin/users (admin)',
             ],
           }),
           {

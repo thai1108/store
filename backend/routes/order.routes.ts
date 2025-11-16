@@ -9,32 +9,7 @@ export const orderRouter = async (request: Request, env: Environment): Promise<R
   const method = request.method;
 
   try {
-    // GET /api/orders - Get all orders (admin only)
-    if (method === 'GET' && segments.length === 2) {
-      // Authenticate admin
-      const authResult = await authenticateRequest(request, env);
-      
-      if (!authResult.authenticated || !authResult.user) {
-        return createUnauthorizedResponse(authResult.error);
-      }
-
-      // Check if user is admin
-      if (authResult.user.role !== 'admin') {
-        return new Response(JSON.stringify({ success: false, message: 'Forbidden: Admin access required' }), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      const result = await orderService.getAll(env);
-      
-      return new Response(JSON.stringify(result), {
-        status: result.success ? 200 : 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // POST /api/orders - Create new order
+    // POST /api/orders - Create new order (authenticated users)
     if (method === 'POST' && segments.length === 2) {
       // Authenticate user
       const authResult = await authenticateRequest(request, env);
@@ -59,8 +34,14 @@ export const orderRouter = async (request: Request, env: Environment): Promise<R
       });
     }
 
-    // GET /api/orders/:id - Get order by ID
+    // GET /api/orders/:id - Get order by ID (authenticated users)
     if (method === 'GET' && segments.length === 3) {
+      const authResult = await authenticateRequest(request, env);
+      
+      if (!authResult.authenticated) {
+        return createUnauthorizedResponse(authResult.error);
+      }
+
       const id = segments[2];
       const result = await orderService.getById(env, id);
       
@@ -70,25 +51,19 @@ export const orderRouter = async (request: Request, env: Environment): Promise<R
       });
     }
 
-    // PUT /api/orders/:id/status - Update order status
-    if (method === 'PUT' && segments.length === 4 && segments[3] === 'status') {
-      const id = segments[2];
-      const body = await request.json() as { status: 'pending' | 'confirmed' | 'completed' | 'cancelled' };
-      const result = await orderService.updateStatus(env, id, body.status);
-      
-      return new Response(JSON.stringify(result), {
-        status: result.success ? 200 : 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify({ success: false, message: 'Not found' }), {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      message: 'Not found' 
+    }), {
       status: 404,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in order router:', error);
-    return new Response(JSON.stringify({ success: false, message: 'Internal server error' }), {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      message: 'Internal server error' 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
