@@ -133,12 +133,15 @@ npm run build
 - ✅ Đặt hàng không cần đăng ký
 - ✅ Đăng ký/đăng nhập để lưu lịch sử
 - ✅ Xem lịch sử đơn hàng (khi đã đăng nhập)
+- ✅ Quản lý profile (tên, SĐT, địa chỉ, avatar)
+- ✅ Xem chi tiết đơn hàng đã đặt
+- ✅ Hỗ trợ đa ngôn ngữ (Tiếng Việt & English)
 
 ### Admin
-- 🚧 Quản lý sản phẩm (CRUD)
-- 🚧 Quản lý đơn hàng
+- ✅ Quản lý sản phẩm (CRUD)
+- ✅ Quản lý đơn hàng
+- ✅ Dashboard tổng quan
 - 🚧 Quản lý khách hàng
-- 🚧 Upload hình ảnh
 
 ## 🔗 API Endpoints
 
@@ -164,6 +167,8 @@ POST   /api/users/register    # Đăng ký
 POST   /api/users/login       # Đăng nhập
 GET    /api/users/me          # Thông tin user hiện tại
 GET    /api/users/me/orders   # Lịch sử đơn hàng của user
+PUT    /api/users/me          # Cập nhật profile
+POST   /api/users/me/avatar   # Upload avatar
 ```
 
 ### Health Check
@@ -206,16 +211,54 @@ npm test
 
 ## 🚀 Deployment
 
-### Cloudflare Worker (Backend)
+Dự án hỗ trợ deploy lên Cloudflare với cả backend (Workers) và frontend (Pages).
+
+### 🎯 Quick Deploy (Khuyến nghị)
+
+#### 1. Cài đặt và đăng nhập Wrangler
 ```bash
-cd backend
-npm run deploy
+npm install -g wrangler
+wrangler login
 ```
 
-### Cloudflare Pages (Frontend)
-1. Build frontend: `npm run build`
-2. Upload `dist/` to Cloudflare Pages
-3. Configure custom domain (optional)
+#### 2. Tạo Production Database
+```bash
+cd backend
+wrangler d1 create store-db-production
+```
+Copy `database_id` và cập nhật trong `backend/wrangler.toml`
+
+#### 3. Setup Database
+```bash
+wrangler d1 execute store-db-production --file=schema.sql --env production
+wrangler d1 execute store-db-production --file=sample-data.sql --env production
+```
+
+#### 4. Deploy tự động
+```bash
+# Từ thư mục gốc
+./deploy-all.sh
+```
+
+### 📚 Tài liệu chi tiết
+
+- **[QUICK_DEPLOY.md](./QUICK_DEPLOY.md)** - Hướng dẫn deploy nhanh 5 phút
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Hướng dẫn chi tiết đầy đủ
+- **[CICD_SETUP.md](./CICD_SETUP.md)** - Setup GitHub Actions tự động deploy
+
+### 🤖 CI/CD với GitHub Actions
+
+Setup GitHub Actions để tự động deploy khi push code:
+1. Xem hướng dẫn trong [CICD_SETUP.md](./CICD_SETUP.md)
+2. Add GitHub Secrets (API Token, Account ID)
+3. Push code lên `main` branch
+4. GitHub tự động deploy! 🎉
+
+### 📍 URLs Sau Khi Deploy
+
+- **Backend API**: `https://store-backend.YOUR_SUBDOMAIN.workers.dev`
+- **Frontend**: `https://store-frontend.pages.dev`
+- **Custom Domain**: Có thể setup custom domain qua Cloudflare Dashboard
 
 ## 🤝 Contributing
 1. Fork the repository

@@ -9,34 +9,8 @@ binding = "DB"
 database_name = "store-db"
 database_id = "bf6fdb44-d131-42da-a47b-57251e8a880f"
 
-[env.production.vars]
-ENVIRONMENT = "production"
-
-[env.staging.vars]
-ENVIRONMENT = "staging"
-
-[[env.production.r2_buckets]]
-binding = "IMAGES_BUCKET"
-bucket_name = "store-images"
-
-[[env.staging.r2_buckets]]
-binding = "IMAGES_BUCKET"
-bucket_name = "store-images-staging"
-
-[[env.production.kv_namespaces]]
-binding = "ORDER_CACHE"
-id = "your-production-kv-namespace-id"
-
-[[env.staging.kv_namespaces]]
-binding = "ORDER_CACHE"
-id = "your-staging-kv-namespace-id"
-
+# Production environment configuration
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "store-db"
-database_id = "bf6fdb44-d131-42da-a47b-57251e8a880f"
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "store-db-staging"
-database_id = "your-staging-database-id"
+database_name = "store-db-production"
+database_id = "59ffd72a-f098-4976-9e41-f68700a6fc6f"

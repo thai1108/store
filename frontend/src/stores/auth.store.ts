@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Save cart to server before logout if authenticated
     const cartStore = useCartStore();
     if (user.value && cartStore.items.length > 0) {
-      cartStore.saveToServer(user.value.id).catch(console.error);
+      cartStore.saveToServer().catch(console.error);
     }
     
     user.value = null;
