@@ -4,6 +4,7 @@ import { productRouter } from '@/routes/product.routes';
 import { orderRouter } from '@/routes/order.routes';
 import { userRouter } from '@/routes/user.routes';
 import { cartRouter } from '@/routes/cart.routes';
+import { storageRouter } from '@/routes/storage.routes';
 
 export default {
   async fetch(request: Request, env: Environment): Promise<Response> {
@@ -28,6 +29,8 @@ export default {
         response = await userRouter(request, env);
       } else if (segments[0] === 'api' && segments[1] === 'cart') {
         response = await cartRouter(request, env);
+      } else if (segments[0] === 'api' && segments[1] === 'storage') {
+        response = await storageRouter(request, env);
       } else if (url.pathname === '/api/health') {
         response = new Response(
           JSON.stringify({

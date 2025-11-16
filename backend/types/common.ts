@@ -6,8 +6,8 @@ export interface ApiResponse<T = any> {
 }
 
 export interface Environment {
-  IMAGES_BUCKET: R2Bucket;
-  ORDER_CACHE?: KVNamespace;
+  STORAGE: R2Bucket;
   DB: D1Database;
   ENVIRONMENT: string;
+  JWT_SECRET: string;
 }

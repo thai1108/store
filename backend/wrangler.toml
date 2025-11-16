@@ -9,8 +9,17 @@ binding = "DB"
 database_name = "store-db"
 database_id = "bf6fdb44-d131-42da-a47b-57251e8a880f"
 
+# R2 Storage for file uploads (avatars, product images, etc.)
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "store-uploads"
+
 # Production environment configuration
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "store-db-production"
 database_id = "59ffd72a-f098-4976-9e41-f68700a6fc6f"
+
+[[env.production.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "store-uploads-production"

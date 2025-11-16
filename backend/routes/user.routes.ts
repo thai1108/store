@@ -2,6 +2,7 @@ import { Environment } from '@/types/common';
 import { authService } from '@/services/auth.service';
 import { orderService } from '@/services/order.service';
 import { AuthRequest, RegisterRequest } from '@/types/auth';
+import { createUploadService } from '@/utils/upload';
 
 export const userRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -123,7 +124,7 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
       });
     }
 
-    // POST /api/users/me/avatar - Upload avatar (simulated)
+    // POST /api/users/me/avatar - Upload avatar
     if (method === 'POST' && segments.length === 4 && segments[2] === 'me' && segments[3] === 'avatar') {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -143,18 +144,64 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
         });
       }
 
-      // For now, we'll simulate avatar upload by generating a placeholder URL
-      // In production, you would upload to cloud storage (Cloudflare R2, S3, etc.)
-      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=200&background=667eea&color=fff`;
-      
-      const now = new Date().toISOString();
-      await env.DB.prepare(
-        `UPDATE users SET avatarUrl = ?, updatedAt = ? WHERE id = ?`
-      ).bind(avatarUrl, now, user.id).run();
+      try {
+        // Parse multipart form data
+        const formData = await request.formData();
+        const avatarFile = formData.get('avatar') as File;
+        
+        if (!avatarFile) {
+          return new Response(JSON.stringify({ success: false, message: 'No file uploaded' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
 
-      return new Response(JSON.stringify({ success: true, data: { avatarUrl } }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+        // Upload to R2 using upload service
+        const uploadService = createUploadService(env, request);
+        const uploadResult = await uploadService.uploadFile(avatarFile, {
+          folder: 'avatars',
+          allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
+          maxSize: 5 * 1024 * 1024, // 5MB
+        });
+
+        if (!uploadResult.success) {
+          return new Response(JSON.stringify({ 
+            success: false, 
+            message: uploadResult.message || 'Failed to upload avatar' 
+          }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Delete old avatar from R2 if exists
+        if (user.avatarUrl && user.avatarUrl.includes('avatars/')) {
+          // Extract key from URL (handle both full URLs and keys)
+          const oldKey = user.avatarUrl.includes('://') 
+            ? user.avatarUrl.split('/').slice(-2).join('/')
+            : user.avatarUrl;
+          await uploadService.deleteFile(oldKey);
+        }
+
+        // Update user in database with new avatar URL
+        const now = new Date().toISOString();
+        await env.DB.prepare(
+          `UPDATE users SET avatarUrl = ?, updatedAt = ? WHERE id = ?`
+        ).bind(uploadResult.url, now, user.id).run();
+
+        return new Response(JSON.stringify({ 
+          success: true, 
+          data: { avatarUrl: uploadResult.url } 
+        }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (error) {
+        console.error('Error uploading avatar:', error);
+        return new Response(JSON.stringify({ success: false, message: 'Failed to upload avatar' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     return new Response(JSON.stringify({ success: false, message: 'Not found' }), {
