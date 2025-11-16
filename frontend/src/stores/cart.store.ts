@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { CartItem } from '@/types/order';
 import { Product } from '@/types/product';
+import cartService from '@/services/cart-service';
 
 const CART_STORAGE_KEY = 'cart-items';
 
@@ -55,57 +56,23 @@ export const useCartStore = defineStore('cart', () => {
   // Load from server for authenticated users
   const loadFromServer = async () => {
     try {
-      const response = await fetch(`/api/cart`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-        },
-      });
-      
-      if (response.status === 401) {
-        // Token is invalid, clear it and switch to guest mode
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+      return await cartService.getCart();
+    } catch (error: any) {
+      if (error.message === 'UNAUTHORIZED') {
         currentUserId.value = null;
-        return [];
       }
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          return data.data.items || [];
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load cart from server:', error);
+      return [];
     }
-    return [];
   };
 
   // Save to server for authenticated users
   const saveToServer = async () => {
     try {
-      const response = await fetch(`/api/cart`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-        },
-        body: JSON.stringify({ items: items.value }),
-      });
-      
-      if (response.status === 401) {
-        // Token is invalid, clear it and switch to guest mode
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+      await cartService.saveCart(items.value);
+    } catch (error: any) {
+      if (error.message === 'UNAUTHORIZED') {
         currentUserId.value = null;
-        return;
       }
-      
-      if (!response.ok) {
-        console.error('Failed to save cart to server');
-      }
-    } catch (error) {
-      console.error('Failed to save cart to server:', error);
     }
   };
 
