@@ -3,6 +3,8 @@ import { authService } from '@/services/auth.service';
 import { orderService } from '@/services/order.service';
 import { AuthRequest, RegisterRequest } from '@/types/auth';
 import { createUploadService } from '@/utils/upload';
+import { userRepository } from '@/repositories/user.repository';
+import { authenticateRequest, createUnauthorizedResponse } from '@/utils/auth';
 
 export const userRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -10,6 +12,29 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
   const method = request.method;
 
   try {
+    // GET /api/users - Get all users (admin only)
+    if (method === 'GET' && segments.length === 2) {
+      const authResult = await authenticateRequest(request, env);
+      
+      if (!authResult.authenticated || !authResult.user) {
+        return createUnauthorizedResponse(authResult.error);
+      }
+
+      // Check if user is admin
+      if (authResult.user.role !== 'admin') {
+        return new Response(JSON.stringify({ success: false, message: 'Forbidden: Admin access required' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const users = await userRepository.getAll(env);
+      
+      return new Response(JSON.stringify({ success: true, data: users }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // POST /api/users/register - Register new user
     if (method === 'POST' && segments.length === 3 && segments[2] === 'register') {
       const data: RegisterRequest = await request.json();

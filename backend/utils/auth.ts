@@ -13,7 +13,12 @@ export interface AuthenticatedRequest extends Request {
 export async function authenticateRequest(
   request: Request,
   env: Environment
-): Promise<{ authenticated: boolean; userId?: string; error?: string }> {
+): Promise<{ 
+  authenticated: boolean; 
+  userId?: string; 
+  user?: { id: string; email: string; role: string }; 
+  error?: string 
+}> {
   const authHeader = request.headers.get('Authorization');
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -38,6 +43,11 @@ export async function authenticateRequest(
     return {
       authenticated: true,
       userId: user.id,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
     };
   } catch (error) {
     console.error('Authentication error:', error);

@@ -64,4 +64,22 @@ export const userRepository = {
     const hashedInput = await this.hashPassword(password);
     return hashedInput === hashedPassword;
   },
+
+  async getAll(env: Environment): Promise<User[]> {
+    const result = await env.DB.prepare(
+      'SELECT id, email, name, phone, address, avatarUrl, role, createdAt, updatedAt FROM users ORDER BY createdAt DESC'
+    ).all();
+
+    return result.results.map((row: any) => ({
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      phone: row.phone,
+      address: row.address,
+      avatarUrl: row.avatarUrl,
+      role: row.role,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    }));
+  },
 };

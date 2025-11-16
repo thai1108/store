@@ -94,4 +94,14 @@ export const orderService = {
       return createErrorResponse('Failed to update order status');
     }
   },
+
+  async getAll(env: Environment): Promise<ApiResponse<Order[]>> {
+    try {
+      const orders = await orderRepository.getAll(env);
+      return createSuccessResponse(orders);
+    } catch (error) {
+      console.error('Error fetching all orders:', error);
+      return createErrorResponse('Failed to fetch orders');
+    }
+  },
 };

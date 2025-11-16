@@ -9,7 +9,10 @@ import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import OrderHistoryView from "@/views/OrderHistoryView.vue";
 import ProfileView from "@/views/ProfileView.vue";
-import AdminView from "@/views/AdminView.vue";
+import AdminLayout from "@/views/admin/AdminLayout.vue";
+import AdminProductsView from "@/views/admin/AdminProductsView.vue";
+import AdminOrdersView from "@/views/admin/AdminOrdersView.vue";
+import AdminUsersView from "@/views/admin/AdminUsersView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -64,9 +67,26 @@ const router = createRouter({
     },
     {
       path: "/admin",
-      name: "admin",
-      component: AdminView,
+      component: AdminLayout,
       meta: { requiresAuth: true, requiresAdmin: true },
+      redirect: "/admin/products",
+      children: [
+        {
+          path: "products",
+          name: "admin-products",
+          component: AdminProductsView,
+        },
+        {
+          path: "orders",
+          name: "admin-orders",
+          component: AdminOrdersView,
+        },
+        {
+          path: "users",
+          name: "admin-users",
+          component: AdminUsersView,
+        },
+      ],
     },
   ],
 });

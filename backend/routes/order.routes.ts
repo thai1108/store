@@ -9,6 +9,31 @@ export const orderRouter = async (request: Request, env: Environment): Promise<R
   const method = request.method;
 
   try {
+    // GET /api/orders - Get all orders (admin only)
+    if (method === 'GET' && segments.length === 2) {
+      // Authenticate admin
+      const authResult = await authenticateRequest(request, env);
+      
+      if (!authResult.authenticated || !authResult.user) {
+        return createUnauthorizedResponse(authResult.error);
+      }
+
+      // Check if user is admin
+      if (authResult.user.role !== 'admin') {
+        return new Response(JSON.stringify({ success: false, message: 'Forbidden: Admin access required' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const result = await orderService.getAll(env);
+      
+      return new Response(JSON.stringify(result), {
+        status: result.success ? 200 : 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // POST /api/orders - Create new order
     if (method === 'POST' && segments.length === 2) {
       // Authenticate user

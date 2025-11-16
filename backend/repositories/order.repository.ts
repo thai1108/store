@@ -112,7 +112,12 @@ export const orderRepository = {
         address: orderResult.customerAddress as string | undefined,
       },
       notes: orderResult.notes as string | undefined,
-      items: itemsResult.results as Order['items'],
+      items: itemsResult.results.map((item: any) => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.price,
+      })),
       createdAt: orderResult.createdAt as string,
       updatedAt: orderResult.updatedAt as string,
     };
@@ -150,7 +155,12 @@ export const orderRepository = {
           address: orderRow.customerAddress as string | undefined,
         },
         notes: orderRow.notes as string | undefined,
-        items: itemsResult.results as Order['items'],
+        items: itemsResult.results.map((item: any) => ({
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+          price: item.price,
+        })),
         createdAt: orderRow.createdAt as string,
         updatedAt: orderRow.updatedAt as string,
       };
@@ -187,5 +197,43 @@ export const orderRepository = {
     }
 
     return updatedOrder;
+  },
+
+  async getAll(env: Environment): Promise<Order[]> {
+    const ordersResult = await env.DB.prepare('SELECT * FROM orders ORDER BY createdAt DESC')
+      .all();
+
+    const orders: Order[] = [];
+    for (const orderRow of ordersResult.results) {
+      const itemsResult = await env.DB.prepare('SELECT * FROM order_items WHERE orderId = ?')
+        .bind(orderRow.id)
+        .all();
+
+      const order: Order = {
+        id: orderRow.id as string,
+        userId: orderRow.userId as string | undefined,
+        totalAmount: orderRow.totalAmount as number,
+        status: orderRow.status as Order['status'],
+        customerInfo: {
+          name: orderRow.customerName as string,
+          phone: orderRow.customerPhone as string,
+          email: orderRow.customerEmail as string | undefined,
+          address: orderRow.customerAddress as string | undefined,
+        },
+        notes: orderRow.notes as string | undefined,
+        items: itemsResult.results.map((item: any) => ({
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        createdAt: orderRow.createdAt as string,
+        updatedAt: orderRow.updatedAt as string,
+      };
+
+      orders.push(order);
+    }
+
+    return orders;
   },
 };
