@@ -10,7 +10,7 @@ export interface CartRepository {
 }
 
 export class D1CartRepository implements CartRepository {
-  constructor(private db: D1Database) {}
+  constructor(private db: D1Database) { }
 
   async getByUserId(userId: string): Promise<CartItem[]> {
     const result = await this.db
@@ -31,10 +31,10 @@ export class D1CartRepository implements CartRepository {
     await this.clearCart(userId);
 
     // Insert new items
-    if (items.length === 0) return;
+    if (items.length === 0) { return };
 
     const now = new Date().toISOString();
-    
+
     // Use batch insert for better performance
     const statements = items.map((item) =>
       this.db
@@ -66,7 +66,7 @@ export class D1CartRepository implements CartRepository {
 
   async addItem(userId: string, item: CartItem): Promise<void> {
     const now = new Date().toISOString();
-    
+
     // Check if item already exists
     const existing = await this.db
       .prepare('SELECT quantity FROM cart_items WHERE userId = ? AND productId = ?')

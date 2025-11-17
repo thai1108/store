@@ -2,13 +2,14 @@
 function buildCursorCondition(createdAt: unknown, id: unknown) {
   if (
     typeof createdAt === 'string' && createdAt.length > 0 &&
-    typeof id === 'string' && id.length > 0
+    (typeof id === 'string' || typeof id === 'number') && String(id).length > 0
   ) {
+    const idNum = typeof id === 'string' ? Number(id) : id;
     return or(
       lt(schema.orders.createdAt, createdAt),
       and(
         eq(schema.orders.createdAt, createdAt),
-        lt(schema.orders.id, id)
+        lt(schema.orders.id, idNum)
       )
     );
   }
@@ -18,9 +19,9 @@ import { eq, desc, lt, and, or } from 'drizzle-orm';
 import { getDb, schema } from '@/db';
 import { Order, CreateOrderRequest } from '@/types/order';
 import { Environment } from '@/types/common';
-import { generateId, getCurrentTimestamp } from '@/utils/helpers';
-import { 
-  CursorPaginationParams, 
+import { getCurrentTimestamp } from '@/utils/helpers';
+import {
+  CursorPaginationParams,
   CursorPaginationResult,
   decodeCursor,
   encodeCursor,
@@ -70,12 +71,12 @@ export const orderRepository = {
       updatedAt: now,
     };
 
-      const result = await db.insert(schema.orders).values(orderData);
-      console.log('Inserted order result:', result);
-      const orderId = result?.meta?.last_row_id;
-      if (!orderId || typeof orderId !== 'number' || orderId <= 0) {
-        throw new Error('Failed to create order: invalid orderId');
-      }
+    const result = await db.insert(schema.orders).values(orderData);
+    console.log('Inserted order result:', result);
+    const orderId = result?.meta?.last_row_id;
+    if (!orderId || typeof orderId !== 'number' || orderId <= 0) {
+      throw new Error('Failed to create order: invalid orderId');
+    }
     for (const item of enrichedItems) {
       await db.insert(schema.orderItems).values({
         orderId,
@@ -91,12 +92,13 @@ export const orderRepository = {
         productId: String(item.productId),
       })),
       customerInfo: data.customerInfo,
+      notes: orderData.notes === null ? undefined : orderData.notes,
     };
   },
 
   async getById(env: Environment, id: string): Promise<Order | null> {
     const db = getDb(env);
-    
+
     const orderResult = await db
       .select()
       .from(schema.orders)
@@ -115,7 +117,7 @@ export const orderRepository = {
     const order = orderResult[0];
     return {
       ...order,
-      id: String(order.id),
+      id: Number(order.id),
       userId: String(order.userId),
       items: itemsResult.map(item => ({
         productId: String(item.productId),
@@ -129,6 +131,7 @@ export const orderRepository = {
         email: order.customerEmail || undefined,
         address: order.customerAddress || undefined,
       },
+      notes: order.notes === null ? undefined : order.notes,
     };
   },
 
@@ -166,7 +169,7 @@ export const orderRepository = {
 
         return {
           ...order,
-          id: String(order.id),
+          id: Number(order.id),
           userId: String(order.userId),
           items: items.map(item => ({
             productId: String(item.productId),
@@ -180,6 +183,7 @@ export const orderRepository = {
             email: order.customerEmail || undefined,
             address: order.customerAddress || undefined,
           },
+          notes: order.notes === null ? undefined : order.notes,
         };
       })
     );
@@ -196,14 +200,14 @@ export const orderRepository = {
   },
 
   async getUserOrders(
-    env: Environment, 
+    env: Environment,
     userId: string,
     pagination?: CursorPaginationParams,
   ): Promise<CursorPaginationResult<Order>> {
     const db = getDb(env);
     const limit = getLimit(pagination?.limit) + 1;
 
-  const conditions = [eq(schema.orders.userId, Number(userId))];
+    const conditions = [eq(schema.orders.userId, Number(userId))];
     if (pagination?.cursor) {
       const decoded = decodeCursor(pagination.cursor);
       const cursorCondition = buildCursorCondition(decoded?.createdAt, decoded?.id ? Number(decoded.id) : undefined);
@@ -230,7 +234,7 @@ export const orderRepository = {
 
         return {
           ...order,
-          id: String(order.id),
+          id: Number(order.id),
           userId: String(order.userId),
           items: items.map(item => ({
             productId: String(item.productId),
@@ -244,6 +248,7 @@ export const orderRepository = {
             email: order.customerEmail || undefined,
             address: order.customerAddress || undefined,
           },
+          notes: order.notes === null ? undefined : order.notes,
         };
       })
     );
@@ -265,7 +270,7 @@ export const orderRepository = {
     status: Order['status'],
   ): Promise<Order | null> {
     const db = getDb(env);
-    
+
     await db
       .update(schema.orders)
       .set({

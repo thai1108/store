@@ -91,7 +91,7 @@ export const userRepository = {
             lt(schema.users.createdAt, decoded.createdAt),
             and(
               eq(schema.users.createdAt, decoded.createdAt),
-              lt(schema.users.id, decoded.id)
+              lt(schema.users.id, typeof decoded.id === 'string' ? Number(decoded.id) : decoded.id)
             )
           )
         );
@@ -118,13 +118,22 @@ export const userRepository = {
 
     const hasMore = results.length > limit - 1;
     const data = hasMore ? results.slice(0, -1) : results;
-    
-    const nextCursor = hasMore && data.length > 0
-      ? encodeCursor(data[data.length - 1].id, data[data.length - 1].createdAt)
+
+    // Ensure id is string for User type
+    const mappedData = data.map(user => ({
+      ...user,
+      id: String(user.id),
+      phone: user.phone === null ? undefined : user.phone,
+      address: user.address === null ? undefined : user.address,
+      avatarUrl: user.avatarUrl === null ? undefined : user.avatarUrl,
+    }));
+
+    const nextCursor = hasMore && mappedData.length > 0
+      ? encodeCursor(mappedData[mappedData.length - 1].id, mappedData[mappedData.length - 1].createdAt)
       : null;
 
     return {
-      data: data as User[],
+      data: mappedData,
       nextCursor,
       hasMore,
     };

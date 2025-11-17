@@ -52,7 +52,7 @@ const getStatusClass = (status: string) => {
       </thead>
       <tbody>
         <tr v-for="order in orders" :key="order.id">
-          <td><code>{{ order.id.slice(0, 8) }}</code></td>
+          <td><code>{{ order.id }}</code></td>
           <td>{{ order.customerInfo.name }}</td>
           <td>{{ formatPrice(order.totalAmount) }}</td>
           <td>
