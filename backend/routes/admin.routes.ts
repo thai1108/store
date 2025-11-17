@@ -106,9 +106,21 @@ export const adminRouter = async (request: Request, env: Environment): Promise<R
 
     // GET /api/admin/users - Get all users
     if (method === 'GET' && segments[2] === 'users' && segments.length === 3) {
-      const users = await userRepository.getAll(env);
+      const url = new URL(request.url);
+      const cursor = url.searchParams.get('cursor') || undefined;
+      const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : undefined;
       
-      return new Response(JSON.stringify({ success: true, data: users }), {
+      const result = await userRepository.getAll(env, { cursor, limit });
+      
+      return new Response(JSON.stringify({ 
+        success: true, 
+        data: result.data,
+        pagination: {
+          nextCursor: result.nextCursor,
+          hasMore: result.hasMore,
+          limit: limit || 20,
+        }
+      }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }

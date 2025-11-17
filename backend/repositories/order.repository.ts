@@ -1,4 +1,20 @@
-import { eq, desc, lt } from 'drizzle-orm';
+// Helper: build cursor condition for pagination
+function buildCursorCondition(createdAt: unknown, id: unknown) {
+  if (
+    typeof createdAt === 'string' && createdAt.length > 0 &&
+    typeof id === 'string' && id.length > 0
+  ) {
+    return or(
+      lt(schema.orders.createdAt, createdAt),
+      and(
+        eq(schema.orders.createdAt, createdAt),
+        lt(schema.orders.id, id)
+      )
+    );
+  }
+  return undefined;
+}
+import { eq, desc, lt, and, or } from 'drizzle-orm';
 import { getDb, schema } from '@/db';
 import { Order, CreateOrderRequest } from '@/types/order';
 import { Environment } from '@/types/common';
@@ -14,7 +30,6 @@ import {
 export const orderRepository = {
   async create(env: Environment, data: CreateOrderRequest): Promise<Order> {
     const db = getDb(env);
-    const id = generateId();
     const now = getCurrentTimestamp();
 
     let totalAmount = 0;
@@ -24,7 +39,7 @@ export const orderRepository = {
       const product = await db
         .select()
         .from(schema.products)
-        .where(eq(schema.products.id, item.productId))
+        .where(eq(schema.products.id, Number(item.productId)))
         .limit(1);
 
       if (!product[0]) {
@@ -32,7 +47,7 @@ export const orderRepository = {
       }
 
       const orderItem = {
-        productId: item.productId,
+        productId: Number(item.productId),
         productName: product[0].name,
         quantity: item.quantity,
         price: product[0].price,
@@ -43,8 +58,7 @@ export const orderRepository = {
     }
 
     const orderData = {
-      id,
-      userId: data.userId,
+      userId: Number(data.userId),
       totalAmount,
       status: 'pending' as const,
       customerName: data.customerInfo.name,
@@ -56,20 +70,28 @@ export const orderRepository = {
       updatedAt: now,
     };
 
-    await db.insert(schema.orders).values(orderData);
-
+      const result = await db.insert(schema.orders).values(orderData);
+      console.log('Inserted order result:', result);
+      const orderId = result?.meta?.last_row_id;
+      if (!orderId || typeof orderId !== 'number' || orderId <= 0) {
+        throw new Error('Failed to create order: invalid orderId');
+      }
     for (const item of enrichedItems) {
       await db.insert(schema.orderItems).values({
-        orderId: id,
+        orderId,
         ...item,
       });
     }
-
     return {
+      id: Number(orderId),
       ...orderData,
-      items: enrichedItems,
+      userId: String(orderData.userId),
+      items: enrichedItems.map(item => ({
+        ...item,
+        productId: String(item.productId),
+      })),
       customerInfo: data.customerInfo,
-    } as Order;
+    };
   },
 
   async getById(env: Environment, id: string): Promise<Order | null> {
@@ -78,7 +100,7 @@ export const orderRepository = {
     const orderResult = await db
       .select()
       .from(schema.orders)
-      .where(eq(schema.orders.id, id))
+      .where(eq(schema.orders.id, Number(id)))
       .limit(1);
 
     if (!orderResult[0]) {
@@ -88,13 +110,15 @@ export const orderRepository = {
     const itemsResult = await db
       .select()
       .from(schema.orderItems)
-      .where(eq(schema.orderItems.orderId, id));
+      .where(eq(schema.orderItems.orderId, Number(id)));
 
     const order = orderResult[0];
     return {
       ...order,
+      id: String(order.id),
+      userId: String(order.userId),
       items: itemsResult.map(item => ({
-        productId: item.productId,
+        productId: String(item.productId),
         productName: item.productName,
         quantity: item.quantity,
         price: item.price,
@@ -105,7 +129,7 @@ export const orderRepository = {
         email: order.customerEmail || undefined,
         address: order.customerAddress || undefined,
       },
-    } as Order;
+    };
   },
 
   async getAll(
@@ -116,19 +140,18 @@ export const orderRepository = {
     const limit = getLimit(pagination?.limit) + 1;
 
     const conditions = [];
-    
     if (pagination?.cursor) {
       const decoded = decodeCursor(pagination.cursor);
-      if (decoded) {
-        conditions.push(lt(schema.orders.createdAt, decoded.createdAt));
+      const cursorCondition = buildCursorCondition(decoded?.createdAt, decoded?.id ? Number(decoded.id) : undefined);
+      if (cursorCondition) {
+        conditions.push(cursorCondition);
       }
     }
-
-    const results = await db
-      .select()
-      .from(schema.orders)
-      .where(conditions.length > 0 ? conditions[0] : undefined)
-      .orderBy(desc(schema.orders.createdAt))
+    const query = conditions.length > 0
+      ? db.select().from(schema.orders).where(and(...conditions))
+      : db.select().from(schema.orders);
+    const results = await query
+      .orderBy(desc(schema.orders.createdAt), desc(schema.orders.id))
       .limit(limit);
 
     const hasMore = results.length > limit - 1;
@@ -143,8 +166,10 @@ export const orderRepository = {
 
         return {
           ...order,
+          id: String(order.id),
+          userId: String(order.userId),
           items: items.map(item => ({
-            productId: item.productId,
+            productId: String(item.productId),
             productName: item.productName,
             quantity: item.quantity,
             price: item.price,
@@ -155,12 +180,12 @@ export const orderRepository = {
             email: order.customerEmail || undefined,
             address: order.customerAddress || undefined,
           },
-        } as Order;
+        };
       })
     );
 
     const nextCursor = hasMore && data.length > 0
-      ? encodeCursor(data[data.length - 1].id, data[data.length - 1].createdAt)
+      ? encodeCursor(String(data[data.length - 1].id), data[data.length - 1].createdAt)
       : null;
 
     return {
@@ -178,20 +203,19 @@ export const orderRepository = {
     const db = getDb(env);
     const limit = getLimit(pagination?.limit) + 1;
 
-    const conditions = [eq(schema.orders.userId, userId)];
-    
+  const conditions = [eq(schema.orders.userId, Number(userId))];
     if (pagination?.cursor) {
       const decoded = decodeCursor(pagination.cursor);
-      if (decoded) {
-        conditions.push(lt(schema.orders.createdAt, decoded.createdAt));
+      const cursorCondition = buildCursorCondition(decoded?.createdAt, decoded?.id ? Number(decoded.id) : undefined);
+      if (cursorCondition) {
+        conditions.push(cursorCondition);
       }
     }
-
-    const results = await db
-      .select()
-      .from(schema.orders)
-      .where(conditions.length > 1 ? conditions[0] : conditions[0])
-      .orderBy(desc(schema.orders.createdAt))
+    const query = conditions.length > 0
+      ? db.select().from(schema.orders).where(and(...conditions))
+      : db.select().from(schema.orders);
+    const results = await query
+      .orderBy(desc(schema.orders.createdAt), desc(schema.orders.id))
       .limit(limit);
 
     const hasMore = results.length > limit - 1;
@@ -206,8 +230,10 @@ export const orderRepository = {
 
         return {
           ...order,
+          id: String(order.id),
+          userId: String(order.userId),
           items: items.map(item => ({
-            productId: item.productId,
+            productId: String(item.productId),
             productName: item.productName,
             quantity: item.quantity,
             price: item.price,
@@ -218,12 +244,12 @@ export const orderRepository = {
             email: order.customerEmail || undefined,
             address: order.customerAddress || undefined,
           },
-        } as Order;
+        };
       })
     );
 
     const nextCursor = hasMore && data.length > 0
-      ? encodeCursor(data[data.length - 1].id, data[data.length - 1].createdAt)
+      ? encodeCursor(String(data[data.length - 1].id), data[data.length - 1].createdAt)
       : null;
 
     return {
@@ -246,7 +272,7 @@ export const orderRepository = {
         status,
         updatedAt: getCurrentTimestamp(),
       })
-      .where(eq(schema.orders.id, id));
+      .where(eq(schema.orders.id, Number(id)));
 
     return this.getById(env, id);
   },

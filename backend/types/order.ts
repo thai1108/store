@@ -1,5 +1,5 @@
 export interface Order {
-  id: string;
+  id: number;
   userId?: string; // Optional for guest orders
   items: OrderItem[];
   totalAmount: number;

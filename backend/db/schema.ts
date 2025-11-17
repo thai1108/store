@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 
 export const products = sqliteTable('products', {
-  id: text('id').primaryKey(),
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   description: text('description'),
   price: real('price').notNull(),
@@ -17,7 +17,7 @@ export const products = sqliteTable('products', {
 }));
 
 export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   phone: text('phone'),
@@ -33,8 +33,8 @@ export const users = sqliteTable('users', {
 }));
 
 export const orders = sqliteTable('orders', {
-  id: text('id').primaryKey(),
-  userId: text('userId').references(() => users.id),
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  userId: integer('userId', { mode: 'number' }).references(() => users.id),
   totalAmount: real('totalAmount').notNull(),
   status: text('status', { 
     enum: ['pending', 'confirmed', 'completed', 'cancelled'] 
@@ -54,8 +54,8 @@ export const orders = sqliteTable('orders', {
 
 export const orderItems = sqliteTable('order_items', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
-  orderId: text('orderId').notNull().references(() => orders.id),
-  productId: text('productId').notNull().references(() => products.id),
+  orderId: integer('orderId', { mode: 'number' }).notNull().references(() => orders.id),
+  productId: integer('productId', { mode: 'number' }).notNull().references(() => products.id),
   productName: text('productName').notNull(),
   quantity: integer('quantity').notNull(),
   price: real('price').notNull(),

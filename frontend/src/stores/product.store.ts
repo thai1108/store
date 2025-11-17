@@ -6,7 +6,11 @@ import { productService } from '@/services/product-service';
 export const useProductStore = defineStore('product', () => {
   const products = ref<Product[]>([]);
   const loading = ref(false);
+  const loadingMore = ref(false);
+  const hasMore = ref(true);
+  const nextCursor = ref<string | null>(null);
   const error = ref<string | null>(null);
+  const currentFilter = ref<ProductFilter | undefined>();
 
   const filteredProducts = computed(() => {
     return products.value;
@@ -15,11 +19,17 @@ export const useProductStore = defineStore('product', () => {
   const fetchProducts = async (filter?: ProductFilter) => {
     loading.value = true;
     error.value = null;
+    currentFilter.value = filter;
+    products.value = [];
+    nextCursor.value = null;
+    hasMore.value = true;
     
     try {
       const response = await productService.getAll(filter);
       if (response.success) {
         products.value = response.data || [];
+        nextCursor.value = response.pagination?.nextCursor || null;
+        hasMore.value = response.pagination?.hasMore || false;
       } else {
         error.value = response.message || 'Failed to fetch products';
       }
@@ -27,6 +37,28 @@ export const useProductStore = defineStore('product', () => {
       error.value = 'Network error occurred';
     } finally {
       loading.value = false;
+    }
+  };
+
+  const loadMore = async () => {
+    if (loadingMore.value || !hasMore.value || !nextCursor.value) return;
+
+    loadingMore.value = true;
+    error.value = null;
+
+    try {
+      const response = await productService.getAll(currentFilter.value, nextCursor.value);
+      if (response.success) {
+        products.value = [...products.value, ...(response.data || [])];
+        nextCursor.value = response.pagination?.nextCursor || null;
+        hasMore.value = response.pagination?.hasMore || false;
+      } else {
+        error.value = response.message || 'Failed to load more products';
+      }
+    } catch (err) {
+      error.value = 'Network error occurred';
+    } finally {
+      loadingMore.value = false;
     }
   };
 
@@ -58,9 +90,12 @@ export const useProductStore = defineStore('product', () => {
   return {
     products,
     loading,
+    loadingMore,
+    hasMore,
     error,
     filteredProducts,
     fetchProducts,
+    loadMore,
     getProductById,
     addProduct,
   };

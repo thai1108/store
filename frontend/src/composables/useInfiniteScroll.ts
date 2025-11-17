@@ -14,14 +14,22 @@ export interface InfiniteScrollOptions<T> {
 export const useInfiniteScroll = <T>(options: InfiniteScrollOptions<T>) => {
   const items: Ref<T[]> = ref([]);
   const loading = ref(false);
+  const loadingMore = ref(false);
   const hasMore = ref(true);
   const nextCursor = ref<string | null>(null);
   const error = ref<string | null>(null);
+  const isInitialLoad = ref(true);
 
   const loadMore = async () => {
-    if (loading.value || !hasMore.value) return;
+    if (loading.value || loadingMore.value || !hasMore.value) return;
 
-    loading.value = true;
+    if (isInitialLoad.value) {
+      loading.value = true;
+      isInitialLoad.value = false;
+    } else {
+      loadingMore.value = true;
+    }
+    
     error.value = null;
 
     try {
@@ -34,6 +42,7 @@ export const useInfiniteScroll = <T>(options: InfiniteScrollOptions<T>) => {
       error.value = err instanceof Error ? err.message : 'Failed to load more items';
     } finally {
       loading.value = false;
+      loadingMore.value = false;
     }
   };
 
@@ -42,6 +51,7 @@ export const useInfiniteScroll = <T>(options: InfiniteScrollOptions<T>) => {
     nextCursor.value = null;
     hasMore.value = true;
     error.value = null;
+    isInitialLoad.value = true;
   };
 
   const refresh = async () => {
@@ -52,6 +62,7 @@ export const useInfiniteScroll = <T>(options: InfiniteScrollOptions<T>) => {
   return {
     items,
     loading,
+    loadingMore,
     hasMore,
     error,
     loadMore,

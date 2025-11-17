@@ -2,6 +2,17 @@ import api from './api';
 import { Order } from '@/types/order';
 import { ApiResponse } from '@/types/common';
 
+export interface PaginatedOrderResponse {
+  success: boolean;
+  data: Order[];
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+    limit: number;
+  };
+  message?: string;
+}
+
 export const orderService = {
   async create(data: {
     items: { productId: string; quantity: number }[];
@@ -27,8 +38,21 @@ export const orderService = {
     return response.data;
   },
 
-  async getUserOrders(): Promise<ApiResponse<Order[]>> {
-    const response = await api.get('/users/me/orders');
-    return response.data;
+  async getUserOrders(cursor?: string, limit?: number): Promise<PaginatedOrderResponse> {
+    try {
+      const params = new URLSearchParams();
+      if (cursor) params.append('cursor', cursor);
+      if (limit) params.append('limit', limit.toString());
+
+      const response = await api.get<PaginatedOrderResponse>(`/users/me/orders?${params.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, limit: 20 },
+        message: error.response?.data?.message || 'Failed to fetch orders',
+      };
+    }
   },
 };

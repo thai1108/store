@@ -183,6 +183,17 @@ onMounted(() => {
               <ProductCard :product="product" />
             </a-col>
           </a-row>
+
+          <div v-if="productStore.hasMore && !productStore.loading" class="load-more-container">
+            <a-button 
+              type="primary" 
+              size="large"
+              @click="productStore.loadMore"
+              :loading="productStore.loadingMore"
+            >
+              {{ productStore.loadingMore ? $t('common.loading') : $t('common.loadMore') }}
+            </a-button>
+          </div>
         </a-spin>
       </div>
     </div>
@@ -336,5 +347,12 @@ onMounted(() => {
 /* Empty state */
 :deep(.ant-empty) {
   padding: 60px 20px;
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  padding: 20px 0;
 }
 </style>

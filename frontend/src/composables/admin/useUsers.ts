@@ -1,11 +1,32 @@
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { adminService } from '@/services/admin-service';
 import { User } from '@/types/auth';
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
 
 export const useUsers = () => {
-  const users = ref<User[]>([]);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
+  const {
+    items: users,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    loadMore,
+    refresh,
+  } = useInfiniteScroll<User>({
+    fetchFn: async (cursor) => {
+      const response = await adminService.getAllUsers(cursor);
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Failed to fetch users');
+      }
+      return {
+        data: response.data,
+        pagination: {
+          nextCursor: response.pagination.nextCursor,
+          hasMore: response.pagination.hasMore,
+        },
+      };
+    },
+  });
 
   const userStats = computed(() => ({
     total: users.value.length,
@@ -13,28 +34,14 @@ export const useUsers = () => {
     admins: users.value.filter((u) => u.role === 'admin').length,
   }));
 
-  const fetchUsers = async () => {
-    loading.value = true;
-    error.value = null;
-    try {
-      const response = await adminService.getAllUsers();
-      if (response.success && response.data) {
-        users.value = response.data;
-      } else {
-        error.value = response.message || 'Failed to fetch users';
-      }
-    } catch (err) {
-      error.value = 'An error occurred while fetching users';
-    } finally {
-      loading.value = false;
-    }
-  };
-
   return {
     users,
     loading,
+    loadingMore,
+    hasMore,
     error,
     userStats,
-    fetchUsers,
+    loadMore,
+    fetchUsers: refresh,
   };
 };

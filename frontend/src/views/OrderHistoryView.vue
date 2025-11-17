@@ -5,6 +5,9 @@ import { Order } from '@/types/order';
 
 const orders = ref<Order[]>([]);
 const isLoading = ref(false);
+const loadingMore = ref(false);
+const hasMore = ref(true);
+const nextCursor = ref<string | null>(null);
 const error = ref('');
 const expandedOrders = ref<Set<string>>(new Set());
 
@@ -21,6 +24,8 @@ const loadOrders = async () => {
     
     if (response.success && response.data) {
       orders.value = response.data;
+      nextCursor.value = response.pagination.nextCursor;
+      hasMore.value = response.pagination.hasMore;
     } else {
       error.value = response.message || 'Failed to load orders';
     }
@@ -29,6 +34,30 @@ const loadOrders = async () => {
     error.value = 'Failed to load orders';
   } finally {
     isLoading.value = false;
+  }
+};
+
+const loadMoreOrders = async () => {
+  if (loadingMore.value || !hasMore.value || !nextCursor.value) return;
+
+  loadingMore.value = true;
+  error.value = '';
+
+  try {
+    const response = await orderService.getUserOrders(nextCursor.value);
+
+    if (response.success && response.data) {
+      orders.value = [...orders.value, ...response.data];
+      nextCursor.value = response.pagination.nextCursor;
+      hasMore.value = response.pagination.hasMore;
+    } else {
+      error.value = response.message || 'Failed to load more orders';
+    }
+  } catch (err) {
+    console.error('Error loading more orders:', err);
+    error.value = 'Failed to load more orders';
+  } finally {
+    loadingMore.value = false;
   }
 };
 
@@ -194,6 +223,17 @@ const sortedOrders = computed(() => {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Load More Button -->
+      <div v-if="hasMore && !isLoading" class="load-more-container">
+        <button 
+          @click="loadMoreOrders" 
+          :disabled="loadingMore"
+          class="load-more-btn"
+        >
+          {{ loadingMore ? $t('common.loading') : $t('common.loadMore') }}
+        </button>
       </div>
     </div>
   </div>
@@ -522,6 +562,36 @@ const sortedOrders = computed(() => {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.load-more-btn {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.load-more-btn:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 @media (max-width: 768px) {

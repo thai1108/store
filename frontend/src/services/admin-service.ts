@@ -103,13 +103,19 @@ export const adminService = {
   },
 
   // User Management
-  async getAllUsers(): Promise<ApiResponse<User[]>> {
+  async getAllUsers(cursor?: string, limit?: number): Promise<PaginatedResponse<User>> {
     try {
-      const response = await api.get<ApiResponse<User[]>>('/admin/users');
+      const params = new URLSearchParams();
+      if (cursor) params.append('cursor', cursor);
+      if (limit) params.append('limit', limit.toString());
+
+      const response = await api.get<PaginatedResponse<User>>(`/admin/users?${params.toString()}`);
       return response.data;
     } catch (error: any) {
       return {
         success: false,
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, limit: 20 },
         message: error.response?.data?.message || 'Failed to fetch users',
       };
     }

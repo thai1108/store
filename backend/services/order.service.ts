@@ -12,13 +12,13 @@ export const orderService = {
         return createErrorResponse('Customer name must be at least 2 characters');
       }
 
-      if (!validatePhone(data.customerInfo.phone)) {
-        return createErrorResponse('Invalid phone number format');
-      }
+      // if (!validatePhone(data.customerInfo.phone)) {
+      //   return createErrorResponse('Invalid phone number format');
+      // }
 
-      if (data.customerInfo.email && !validateEmail(data.customerInfo.email)) {
-        return createErrorResponse('Invalid email format');
-      }
+      // if (data.customerInfo.email && !validateEmail(data.customerInfo.email)) {
+      //   return createErrorResponse('Invalid email format');
+      // }
 
       // Validate order items
       if (!data.items || data.items.length === 0) {

@@ -1,6 +1,15 @@
+import { eq, desc, lt, and, or } from 'drizzle-orm';
+import { getDb, schema } from '@/db';
 import { User, RegisterRequest } from '@/types/auth';
 import { Environment } from '@/types/common';
 import { generateId, getCurrentTimestamp } from '@/utils/helpers';
+import { 
+  CursorPaginationParams, 
+  CursorPaginationResult,
+  decodeCursor,
+  encodeCursor,
+  getLimit,
+} from '@/utils/pagination';
 
 export const userRepository = {
   async create(env: Environment, data: RegisterRequest): Promise<User> {
@@ -65,21 +74,59 @@ export const userRepository = {
     return hashedInput === hashedPassword;
   },
 
-  async getAll(env: Environment): Promise<User[]> {
-    const result = await env.DB.prepare(
-      'SELECT id, email, name, phone, address, avatarUrl, role, createdAt, updatedAt FROM users ORDER BY createdAt DESC'
-    ).all();
+  async getAll(
+    env: Environment,
+    pagination?: CursorPaginationParams,
+  ): Promise<CursorPaginationResult<User>> {
+    const db = getDb(env);
+    const limit = getLimit(pagination?.limit) + 1;
 
-    return result.results.map((row: any) => ({
-      id: row.id,
-      email: row.email,
-      name: row.name,
-      phone: row.phone,
-      address: row.address,
-      avatarUrl: row.avatarUrl,
-      role: row.role,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    }));
+    const conditions = [];
+    
+    if (pagination?.cursor) {
+      const decoded = decodeCursor(pagination.cursor);
+      if (decoded) {
+        conditions.push(
+          or(
+            lt(schema.users.createdAt, decoded.createdAt),
+            and(
+              eq(schema.users.createdAt, decoded.createdAt),
+              lt(schema.users.id, decoded.id)
+            )
+          )
+        );
+      }
+    }
+
+    const validConditions = conditions.filter(Boolean);
+    const results = await db
+      .select({
+        id: schema.users.id,
+        email: schema.users.email,
+        name: schema.users.name,
+        phone: schema.users.phone,
+        address: schema.users.address,
+        avatarUrl: schema.users.avatarUrl,
+        role: schema.users.role,
+        createdAt: schema.users.createdAt,
+        updatedAt: schema.users.updatedAt,
+      })
+      .from(schema.users)
+      .where(validConditions.length > 0 ? and(...validConditions) : undefined)
+      .orderBy(desc(schema.users.createdAt), desc(schema.users.id))
+      .limit(limit);
+
+    const hasMore = results.length > limit - 1;
+    const data = hasMore ? results.slice(0, -1) : results;
+    
+    const nextCursor = hasMore && data.length > 0
+      ? encodeCursor(data[data.length - 1].id, data[data.length - 1].createdAt)
+      : null;
+
+    return {
+      data: data as User[],
+      nextCursor,
+      hasMore,
+    };
   },
 };
