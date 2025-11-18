@@ -11,78 +11,40 @@ if (!authStore.isAuthenticated || authStore.user?.role !== 'admin') {
 </script>
 
 <template>
-  <div class="admin-layout">
-    <div class="container">
-      <h1 class="admin-title">{{ $t('admin.title') }}</h1>
-
-      <nav class="tabs">
-        <router-link to="/admin/products" class="tab" active-class="active">
-          {{ $t('admin.products') }}
-        </router-link>
-        <router-link to="/admin/orders" class="tab" active-class="active">
-          {{ $t('admin.orders') }}
-        </router-link>
-        <router-link to="/admin/users" class="tab" active-class="active">
-          {{ $t('admin.customers') }}
-        </router-link>
-      </nav>
-
-      <router-view />
-    </div>
-  </div>
+  <a-layout style="min-height: 100vh">
+    <a-layout-sider collapsible theme="dark">
+      <div class="logo" style="height: 64px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold;">
+        Admin Panel
+      </div>
+      <a-menu theme="dark" mode="inline" :selected-keys="[router.currentRoute.value.path]">
+        <a-menu-item key="/admin/products">
+          <router-link to="/admin/products" style="color: inherit; text-decoration: none;">
+            <span>{{ $t('admin.products') }}</span>
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="/admin/orders">
+          <router-link to="/admin/orders" style="color: inherit; text-decoration: none;">
+            <span>{{ $t('admin.orders') }}</span>
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="/admin/users">
+          <router-link to="/admin/users" style="color: inherit; text-decoration: none;">
+            <span>{{ $t('admin.customers') }}</span>
+          </router-link>
+        </a-menu-item>
+      </a-menu>
+    </a-layout-sider>
+    <a-layout>
+      <a-layout-header style="background: #fff; padding: 0 24px; border-bottom: 1px solid #e8e8e8;">
+        <h1 style="margin: 0; line-height: 64px;">{{ $t('admin.title') }}</h1>
+      </a-layout-header>
+      <a-layout-content style="padding: 24px; background: #f0f2f5;">
+        <router-view />
+      </a-layout-content>
+    </a-layout>
+  </a-layout>
 </template>
 
 <style scoped>
-.admin-layout {
-  padding: 80px 20px 40px;
-  min-height: 100vh;
-  background: #f7fafc;
-}
-
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.admin-title {
-  font-size: 2rem;
-  color: #2d3748;
-  margin-bottom: 30px;
-}
-
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 30px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.tab {
-  padding: 12px 24px;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  color: #718096;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-decoration: none;
-}
-
-.tab:hover {
-  color: #2d3748;
-  background: #edf2f7;
-}
-
-.tab.active {
-  color: #4299e1;
-  border-bottom-color: #4299e1;
-  font-weight: 600;
-}
-
-@media (max-width: 768px) {
-  .admin-layout {
-    padding: 70px 10px 30px;
-  }
-}
+/* Additional styles if needed */
 </style>
