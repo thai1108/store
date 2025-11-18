@@ -4,6 +4,7 @@ import { orderService } from '@/services/order.service';
 import { userRepository } from '@/repositories/user.repository';
 import { authenticateRequest, createUnauthorizedResponse } from '@/utils/auth';
 import { CreateProductRequest, UpdateProductRequest } from '@/types/product';
+import { createUploadService } from '@/utils/upload';
 
 export const adminRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -50,6 +51,50 @@ export const adminRouter = async (request: Request, env: Environment): Promise<R
         status: result.success ? 201 : 400,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    // POST /api/admin/upload - Upload image(s)
+    if (method === 'POST' && segments[2] === 'upload' && segments.length === 3) {
+      const formData = await request.formData();
+      const uploadService = createUploadService(env, request);
+      const uploadedUrls: string[] = [];
+      const errors: string[] = [];
+
+      // Handle multiple files
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          const result = await uploadService.uploadFile(value, { 
+            folder: 'products',
+            maxSize: 10 * 1024 * 1024, // 10MB for product images
+          });
+          
+          if (result.success && result.url) {
+            uploadedUrls.push(result.url);
+          } else {
+            errors.push(result.message || 'Upload failed');
+          }
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          urls: uploadedUrls,
+          errors: errors.length > 0 ? errors : undefined,
+        }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } else {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          message: 'No files uploaded',
+          errors,
+        }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // PUT /api/admin/products/:id - Update product

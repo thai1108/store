@@ -16,6 +16,32 @@ export interface PaginatedResponse<T> {
 }
 
 export const adminService = {
+  // File Upload
+  async uploadImages(files: File[]): Promise<{ success: boolean; urls?: string[]; errors?: string[]; message?: string }> {
+    try {
+      const formData = new FormData();
+      files.forEach((file, index) => {
+        formData.append(`image${index}`, file);
+      });
+
+      const response = await api.post<{ success: boolean; urls?: string[]; errors?: string[]; message?: string }>(
+        '/admin/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to upload images',
+      };
+    }
+  },
+
   // Product Management
   async getAllProducts(cursor?: string, limit?: number): Promise<PaginatedResponse<Product>> {
     try {

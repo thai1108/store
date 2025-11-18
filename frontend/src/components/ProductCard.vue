@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, h } from "vue";
+import { computed, h, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { Product } from "@/types/product";
+import { Product, ProductVariant } from "@/types/product";
 import { useCartStore } from "@/stores/cart.store";
 import { ShoppingCartOutlined, CheckCircleOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
@@ -14,11 +14,33 @@ const { t } = useI18n();
 const props = defineProps<Props>();
 const cartStore = useCartStore();
 
+const selectedVariant = ref<ProductVariant | null>(null);
+const currentImageIndex = ref(0);
+
+const hasVariants = computed(() => {
+  return props.product.variants && props.product.variants.length > 0;
+});
+
+const displayImages = computed(() => {
+  if (props.product.images && props.product.images.length > 0) {
+    return props.product.images.map(img => img.imageUrl);
+  }
+  return props.product.imageUrl ? [props.product.imageUrl] : [];
+});
+
+const currentImage = computed(() => {
+  return displayImages.value[currentImageIndex.value] || '';
+});
+
 const formattedPrice = computed(() => {
+  let price = props.product.price;
+  if (selectedVariant.value && selectedVariant.value.priceAdjustment) {
+    price += selectedVariant.value.priceAdjustment;
+  }
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
-  }).format(props.product.price);
+  }).format(price);
 });
 
 const categoryColor = computed(() => {
@@ -30,13 +52,45 @@ const categoryColor = computed(() => {
   return colors[props.product.category] || "default";
 });
 
+const isInStock = computed(() => {
+  if (hasVariants.value) {
+    if (selectedVariant.value) {
+      return selectedVariant.value.stock > 0;
+    }
+    // If has variants but none selected, check if any variant has stock
+    return props.product.variants!.some(v => v.stock > 0);
+  }
+  return props.product.inStock;
+});
+
 const addToCart = () => {
-  if (props.product.inStock) {
-    cartStore.addToCart(props.product);
+  if (hasVariants.value && !selectedVariant.value) {
+    message.warning('Please select a size');
+    return;
+  }
+  
+  if (isInStock.value) {
+    cartStore.addToCart(props.product, selectedVariant.value || undefined);
     message.success({
       content: t('products.addedToCart', { name: props.product.name }),
       icon: () => h(CheckCircleOutlined),
     });
+  }
+};
+
+const selectVariant = (variant: ProductVariant) => {
+  selectedVariant.value = variant;
+};
+
+const nextImage = () => {
+  if (displayImages.value.length > 1) {
+    currentImageIndex.value = (currentImageIndex.value + 1) % displayImages.value.length;
+  }
+};
+
+const prevImage = () => {
+  if (displayImages.value.length > 1) {
+    currentImageIndex.value = (currentImageIndex.value - 1 + displayImages.value.length) % displayImages.value.length;
   }
 };
 </script>
@@ -45,13 +99,13 @@ const addToCart = () => {
   <a-card
     hoverable
     class="product-card hover-lift"
-    :class="{ 'out-of-stock-card': !product.inStock }"
+    :class="{ 'out-of-stock-card': !isInStock }"
   >
     <template #cover>
       <div class="product-image-wrapper">
         <img
-          v-if="product.imageUrl"
-          :src="product.imageUrl"
+          v-if="currentImage"
+          :src="currentImage"
           :alt="product.name"
           class="product-image"
           @error="
@@ -64,8 +118,22 @@ const addToCart = () => {
           <span>No Image</span>
         </div>
 
+        <!-- Image navigation buttons -->
+        <template v-if="displayImages.length > 1">
+          <button class="image-nav prev" @click.stop="prevImage">‹</button>
+          <button class="image-nav next" @click.stop="nextImage">›</button>
+          <div class="image-indicators">
+            <span 
+              v-for="(_, idx) in displayImages" 
+              :key="idx" 
+              :class="{ active: idx === currentImageIndex }"
+              @click.stop="currentImageIndex = idx"
+            ></span>
+          </div>
+        </template>
+
         <a-tag
-          v-if="!product.inStock"
+          v-if="!isInStock"
           color="red"
           class="stock-badge"
         >
@@ -90,6 +158,26 @@ const addToCart = () => {
     </a-card-meta>
 
     <div class="product-footer">
+      <!-- Variant Selection -->
+      <div v-if="hasVariants" class="variants-section">
+        <div class="variants-label">Select Size:</div>
+        <div class="variants-buttons">
+          <button
+            v-for="variant in product.variants"
+            :key="variant.id"
+            :class="['variant-btn', { 
+              selected: selectedVariant?.id === variant.id,
+              'out-of-stock': variant.stock <= 0
+            }]"
+            :disabled="variant.stock <= 0"
+            @click="selectVariant(variant)"
+          >
+            {{ variant.size }}
+            <span v-if="variant.stock <= 0" class="stock-label">(Out)</span>
+          </button>
+        </div>
+      </div>
+
       <div class="product-info">
         <div class="price">{{ formattedPrice }}</div>
         <a-tag :color="categoryColor" class="category-tag">
@@ -99,7 +187,7 @@ const addToCart = () => {
 
       <a-button
         type="primary"
-        :disabled="!product.inStock"
+        :disabled="!isInStock"
         @click="addToCart"
         class="add-to-cart-btn"
         size="large"
@@ -167,12 +255,69 @@ const addToCart = () => {
   font-size: 48px;
 }
 
+.image-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  z-index: 2;
+}
+
+.image-nav:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.image-nav.prev {
+  left: 10px;
+}
+
+.image-nav.next {
+  right: 10px;
+}
+
+.image-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.image-indicators span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.image-indicators span.active {
+  background: white;
+  width: 24px;
+  border-radius: 4px;
+}
+
 .stock-badge {
   position: absolute;
   top: 12px;
   right: 12px;
   font-weight: 600;
   animation: scaleIn 0.4s ease-out;
+  z-index: 2;
 }
 
 .product-description {
@@ -183,6 +328,7 @@ const addToCart = () => {
   min-height: 44px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -191,6 +337,56 @@ const addToCart = () => {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #f0f0f0;
+}
+
+.variants-section {
+  margin-bottom: 16px;
+}
+
+.variants-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #595959;
+  margin-bottom: 8px;
+}
+
+.variants-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variant-btn {
+  padding: 6px 14px;
+  border: 2px solid #d9d9d9;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.variant-btn:hover:not(:disabled) {
+  border-color: #40a9ff;
+  color: #40a9ff;
+}
+
+.variant-btn.selected {
+  border-color: #1890ff;
+  background: #1890ff;
+  color: white;
+}
+
+.variant-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
+.variant-btn .stock-label {
+  font-size: 11px;
+  margin-left: 4px;
 }
 
 .product-info {
@@ -242,6 +438,11 @@ const addToCart = () => {
 
   .add-to-cart-btn {
     font-size: 14px;
+  }
+  
+  .variant-btn {
+    font-size: 12px;
+    padding: 5px 12px;
   }
 }
 

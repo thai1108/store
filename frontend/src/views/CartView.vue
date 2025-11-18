@@ -45,15 +45,16 @@ const handleClearCart = () => {
   });
 };
 
-const handleRemoveItem = (productId: string, productName: string) => {
+const handleRemoveItem = (productId: string, productName: string, variantId?: string) => {
+  const variantLabel = variantId ? ` (variant)` : '';
   Modal.confirm({
     title: t('cart.removeItem'),
-    content: t('cart.removeItemMessage', { name: productName }),
+    content: t('cart.removeItemMessage', { name: productName + variantLabel }),
     okText: t('cart.remove'),
     okType: "danger",
     cancelText: t('common.cancel'),
     onOk() {
-      cartStore.removeFromCart(productId);
+      cartStore.removeFromCart(productId, variantId);
       message.success(t('cart.itemRemoved'));
     },
   });
@@ -101,7 +102,7 @@ const handleRemoveItem = (productId: string, productName: string) => {
 
             <a-list
               :data-source="cartStore.items"
-              :row-key="(item: CartItem) => item.productId"
+              :row-key="(item: CartItem) => item.variantId ? `${item.productId}-${item.variantId}` : item.productId"
             >
               <template #renderItem="{ item }">
                 <a-list-item class="cart-item">
@@ -109,7 +110,7 @@ const handleRemoveItem = (productId: string, productName: string) => {
                     <a-button
                       type="text"
                       danger
-                      @click="handleRemoveItem(item.productId, item.productName)"
+                      @click="handleRemoveItem(item.productId, item.productName, item.variantId)"
                     >
                       <DeleteOutlined />
                     </a-button>
@@ -125,7 +126,12 @@ const handleRemoveItem = (productId: string, productName: string) => {
                     </template>
 
                     <template #title>
-                      <div class="item-title">{{ item.productName }}</div>
+                      <div class="item-title">
+                        {{ item.productName }}
+                        <a-tag v-if="item.variantSize" color="blue" class="variant-tag">
+                          {{ item.variantSize }}
+                        </a-tag>
+                      </div>
                     </template>
 
                     <template #description>
@@ -139,7 +145,7 @@ const handleRemoveItem = (productId: string, productName: string) => {
                             :min="1"
                             :max="99"
                             size="large"
-                            @change="(value: number | undefined) => cartStore.updateQuantity(item.productId, value ?? 1)"
+                            @change="(value: number | undefined) => cartStore.updateQuantity(item.productId, value ?? 1, item.variantId)"
                           />
                         </div>
                         <div class="item-subtotal">
@@ -292,10 +298,18 @@ const handleRemoveItem = (productId: string, productName: string) => {
 }
 
 .item-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #262626;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.variant-tag {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .item-details {

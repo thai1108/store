@@ -41,12 +41,36 @@ CREATE TABLE IF NOT EXISTS orders (
   FOREIGN KEY (userId) REFERENCES users (id)
 );
 
+-- Create product_images table
+CREATE TABLE IF NOT EXISTS product_images (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  productId INTEGER NOT NULL,
+  imageUrl TEXT NOT NULL,
+  displayOrder INTEGER NOT NULL DEFAULT 0,
+  createdAt TEXT NOT NULL,
+  FOREIGN KEY (productId) REFERENCES products (id) ON DELETE CASCADE
+);
+
+-- Create product_variants table
+CREATE TABLE IF NOT EXISTS product_variants (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  productId INTEGER NOT NULL,
+  size TEXT NOT NULL,
+  stock INTEGER NOT NULL DEFAULT 0,
+  priceAdjustment REAL DEFAULT 0,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
+  FOREIGN KEY (productId) REFERENCES products (id) ON DELETE CASCADE
+);
+
 -- Create order_items table
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   orderId INTEGER NOT NULL,
   productId INTEGER NOT NULL,
   productName TEXT NOT NULL,
+  variantId INTEGER,
+  variantSize TEXT,
   quantity INTEGER NOT NULL,
   price REAL NOT NULL,
   FOREIGN KEY (orderId) REFERENCES orders (id),
@@ -59,6 +83,8 @@ CREATE TABLE IF NOT EXISTS cart_items (
   userId INTEGER NOT NULL,
   productId INTEGER NOT NULL,
   productName TEXT NOT NULL,
+  variantId INTEGER,
+  variantSize TEXT,
   quantity INTEGER NOT NULL,
   price REAL NOT NULL,
   imageUrl TEXT,
@@ -66,12 +92,14 @@ CREATE TABLE IF NOT EXISTS cart_items (
   updatedAt TEXT NOT NULL,
   FOREIGN KEY (userId) REFERENCES users (id),
   FOREIGN KEY (productId) REFERENCES products (id),
-  UNIQUE(userId, productId)
+  UNIQUE(userId, productId, variantId)
 );
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_products_category ON products (category);
 CREATE INDEX IF NOT EXISTS idx_products_instock ON products (inStock);
+CREATE INDEX IF NOT EXISTS idx_product_images_productid ON product_images (productId);
+CREATE INDEX IF NOT EXISTS idx_product_variants_productid ON product_variants (productId);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
 CREATE INDEX IF NOT EXISTS idx_orders_userid ON orders (userId);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders (status);

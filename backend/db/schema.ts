@@ -16,6 +16,28 @@ export const products = sqliteTable('products', {
   createdAtIdx: index('idx_products_created_at').on(table.createdAt),
 }));
 
+export const productImages = sqliteTable('product_images', {
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  productId: integer('productId', { mode: 'number' }).notNull().references(() => products.id, { onDelete: 'cascade' }),
+  imageUrl: text('imageUrl').notNull(),
+  displayOrder: integer('displayOrder').notNull().default(0),
+  createdAt: text('createdAt').notNull(),
+}, (table) => ({
+  productIdIdx: index('idx_product_images_productid').on(table.productId),
+}));
+
+export const productVariants = sqliteTable('product_variants', {
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  productId: integer('productId', { mode: 'number' }).notNull().references(() => products.id, { onDelete: 'cascade' }),
+  size: text('size').notNull(),
+  stock: integer('stock').notNull().default(0),
+  priceAdjustment: real('priceAdjustment').default(0),
+  createdAt: text('createdAt').notNull(),
+  updatedAt: text('updatedAt').notNull(),
+}, (table) => ({
+  productIdIdx: index('idx_product_variants_productid').on(table.productId),
+}));
+
 export const users = sqliteTable('users', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   email: text('email').notNull().unique(),
@@ -57,6 +79,8 @@ export const orderItems = sqliteTable('order_items', {
   orderId: integer('orderId', { mode: 'number' }).notNull().references(() => orders.id),
   productId: integer('productId', { mode: 'number' }).notNull().references(() => products.id),
   productName: text('productName').notNull(),
+  variantId: integer('variantId', { mode: 'number' }),
+  variantSize: text('variantSize'),
   quantity: integer('quantity').notNull(),
   price: real('price').notNull(),
 }, (table) => ({
@@ -68,6 +92,8 @@ export const cartItems = sqliteTable('cart_items', {
   userId: text('userId').notNull().references(() => users.id),
   productId: text('productId').notNull().references(() => products.id),
   productName: text('productName').notNull(),
+  variantId: text('variantId'),
+  variantSize: text('variantSize'),
   quantity: integer('quantity').notNull(),
   price: real('price').notNull(),
   imageUrl: text('imageUrl'),
@@ -79,6 +105,10 @@ export const cartItems = sqliteTable('cart_items', {
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
+export type ProductImage = typeof productImages.$inferSelect;
+export type InsertProductImage = typeof productImages.$inferInsert;
+export type ProductVariant = typeof productVariants.$inferSelect;
+export type InsertProductVariant = typeof productVariants.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Order = typeof orders.$inferSelect;

@@ -13,6 +13,8 @@ export interface Order {
 export interface OrderItem {
   productId: string;
   productName: string;
+  variantId?: string;
+  variantSize?: string;
   quantity: number;
   price: number;
 }
@@ -27,6 +29,8 @@ export interface CustomerInfo {
 export interface CartItem {
   productId: string;
   productName: string;
+  variantId?: string;
+  variantSize?: string;
   price: number;
   quantity: number;
   imageUrl?: string;

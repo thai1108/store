@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { CartItem } from '@/types/order';
-import { Product } from '@/types/product';
+import { Product, ProductVariant } from '@/types/product';
 import cartService from '@/services/cart-service';
 
 const CART_STORAGE_KEY = 'cart-items';
@@ -119,8 +119,20 @@ export const useCartStore = defineStore('cart', () => {
     localStorage.removeItem(CART_STORAGE_KEY);
   };
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    const existingItem = items.value.find((item: CartItem) => item.productId === product.id);
+  const addToCart = (product: Product, variant?: ProductVariant, quantity: number = 1) => {
+    // Create a unique key for the cart item (product + variant combination)
+    const cartKey = variant ? `${product.id}-${variant.id}` : product.id;
+    
+    const existingItem = items.value.find((item: CartItem) => {
+      const itemKey = item.variantId ? `${item.productId}-${item.variantId}` : item.productId;
+      return itemKey === cartKey;
+    });
+    
+    // Calculate price with variant adjustment
+    let price = product.price;
+    if (variant && variant.priceAdjustment) {
+      price += variant.priceAdjustment;
+    }
     
     if (existingItem) {
       existingItem.quantity += quantity;
@@ -128,25 +140,37 @@ export const useCartStore = defineStore('cart', () => {
       items.value.push({
         productId: product.id,
         productName: product.name,
-        price: product.price,
+        variantId: variant?.id,
+        variantSize: variant?.size,
+        price,
         quantity,
         imageUrl: product.imageUrl,
       });
     }
   };
 
-  const removeFromCart = (productId: string) => {
-    const index = items.value.findIndex((item: CartItem) => item.productId === productId);
+  const removeFromCart = (productId: string, variantId?: string) => {
+    const index = items.value.findIndex((item: CartItem) => {
+      if (variantId) {
+        return item.productId === productId && item.variantId === variantId;
+      }
+      return item.productId === productId && !item.variantId;
+    });
     if (index > -1) {
       items.value.splice(index, 1);
     }
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    const item = items.value.find((item: CartItem) => item.productId === productId);
+  const updateQuantity = (productId: string, quantity: number, variantId?: string) => {
+    const item = items.value.find((item: CartItem) => {
+      if (variantId) {
+        return item.productId === productId && item.variantId === variantId;
+      }
+      return item.productId === productId && !item.variantId;
+    });
     if (item) {
       if (quantity <= 0) {
-        removeFromCart(productId);
+        removeFromCart(productId, variantId);
       } else {
         item.quantity = quantity;
       }
