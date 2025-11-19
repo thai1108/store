@@ -6,7 +6,7 @@ import { applyRateLimit, rateLimitConfigs } from '@/utils/rate-limit';
 
 export const orderRouter = async (request: Request, env: Environment): Promise<Response> => {
   // Apply moderate rate limiting (100 requests per minute)
-  const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.moderate);
+  const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.relaxed);
   if (rateLimitResponse) return rateLimitResponse;
 
   const url = new URL(request.url);
