@@ -286,4 +286,11 @@ export default {
     english: 'English',
     changeLanguage: 'Change Language',
   },
+  footer: {
+    contact: 'Contact',
+    followUs: 'Follow Us',
+    location: 'Location',
+    viewOnMap: 'View on Map',
+    allRightsReserved: 'All rights reserved',
+  },
 };

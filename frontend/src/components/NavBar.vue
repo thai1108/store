@@ -43,53 +43,30 @@ const changeLanguage = (lang: string) => {
     <div class="nav-container">
       <div class="nav-header">
         <RouterLink to="/" class="nav-brand" @click="closeMobileMenu">
-          <span class="brand-icon">🧋</span>
-          <span class="brand-text">TeaStore</span>
+          <img src="@/assets/images/logo.webp" alt="TeaStore Logo" class="brand-logo" />
         </RouterLink>
 
-        <a-button
-          type="text"
-          class="mobile-menu-btn"
-          @click="mobileMenuVisible = !mobileMenuVisible"
-        >
+        <a-button type="text" class="mobile-menu-btn" @click="mobileMenuVisible = !mobileMenuVisible">
           <MenuOutlined />
         </a-button>
       </div>
 
       <div class="nav-links" :class="{ 'mobile-open': mobileMenuVisible }">
-        <RouterLink
-          to="/products"
-          class="nav-link"
-          @click="closeMobileMenu"
-        >
+        <RouterLink to="/products" class="nav-link" @click="closeMobileMenu">
           <AppstoreOutlined />
           <span>{{ $t('nav.products') }}</span>
         </RouterLink>
 
-        <RouterLink
-          v-if="authStore.isAuthenticated"
-          to="/orders"
-          class="nav-link"
-          @click="closeMobileMenu"
-        >
+        <RouterLink v-if="authStore.isAuthenticated" to="/orders" class="nav-link" @click="closeMobileMenu">
           <HistoryOutlined />
           <span>{{ $t('nav.orders') }}</span>
         </RouterLink>
 
-        <RouterLink
-          v-if="authStore.isAdmin"
-          to="/admin"
-          class="nav-link admin-link"
-          @click="closeMobileMenu"
-        >
+        <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-link admin-link" @click="closeMobileMenu">
           <span>{{ $t('nav.adminPanel') }}</span>
         </RouterLink>
 
-        <RouterLink
-          to="/cart"
-          class="nav-link cart-link"
-          @click="closeMobileMenu"
-        >
+        <RouterLink to="/cart" class="nav-link cart-link" @click="closeMobileMenu">
           <a-badge :count="cartStore.totalItems" :overflow-count="99">
             <ShoppingCartOutlined :style="{ fontSize: '20px' }" />
           </a-badge>
@@ -104,18 +81,10 @@ const changeLanguage = (lang: string) => {
           </a-button>
           <template #overlay>
             <a-menu>
-              <a-menu-item 
-                key="vi" 
-                @click="changeLanguage('vi')"
-                :class="{ 'active-lang': locale === 'vi' }"
-              >
+              <a-menu-item key="vi" @click="changeLanguage('vi')" :class="{ 'active-lang': locale === 'vi' }">
                 🇻🇳 {{ $t('language.vietnamese') }}
               </a-menu-item>
-              <a-menu-item 
-                key="en" 
-                @click="changeLanguage('en')"
-                :class="{ 'active-lang': locale === 'en' }"
-              >
+              <a-menu-item key="en" @click="changeLanguage('en')" :class="{ 'active-lang': locale === 'en' }">
                 🇬🇧 {{ $t('language.english') }}
               </a-menu-item>
             </a-menu>
@@ -177,6 +146,7 @@ const changeLanguage = (lang: string) => {
     opacity: 0;
     transform: translateY(-100%);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -215,9 +185,15 @@ const changeLanguage = (lang: string) => {
   color: #096dd9;
 }
 
-.brand-icon {
-  font-size: 2rem;
-  animation: pulse 2s ease-in-out infinite;
+.brand-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.nav-brand:hover .brand-logo {
+  transform: rotate(5deg) scale(1.1);
 }
 
 .brand-text {

@@ -46,27 +46,18 @@ const features = computed(() => [
 <template>
   <div class="home-view">
     <!-- Hero Section -->
-    <section class="hero gradient-primary">
+    <section v-if="false" class="hero gradient-primary">
       <div class="hero-content fade-in">
         <h1 class="hero-title">{{ $t('home.title') }}</h1>
         <p class="hero-subtitle">
           {{ $t('home.subtitle') }}
         </p>
         <div class="hero-actions">
-          <a-button
-            type="primary"
-            size="large"
-            @click="router.push('/products')"
-            class="cta-button hover-scale"
-          >
+          <a-button type="primary" size="large" @click="router.push('/products')" class="cta-button hover-scale">
             <ShoppingOutlined />
             {{ $t('home.browseProducts') }}
           </a-button>
-          <a-button
-            size="large"
-            @click="router.push('/register')"
-            class="secondary-button"
-          >
+          <a-button size="large" @click="router.push('/register')" class="secondary-button">
             {{ $t('home.joinNow') }}
           </a-button>
         </div>
@@ -75,29 +66,6 @@ const features = computed(() => [
         <div class="bubble bubble-1"></div>
         <div class="bubble bubble-2"></div>
         <div class="bubble bubble-3"></div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features-section">
-      <div class="container">
-        <a-row :gutter="[24, 24]">
-          <a-col
-            v-for="(feature, index) in features"
-            :key="index"
-            :xs="24"
-            :sm="12"
-            :lg="6"
-          >
-            <a-card class="feature-card hover-lift" :bordered="false">
-              <div class="feature-icon">
-                <component :is="feature.icon" />
-              </div>
-              <h3>{{ feature.title }}</h3>
-              <p>{{ feature.description }}</p>
-            </a-card>
-          </a-col>
-        </a-row>
       </div>
     </section>
 
@@ -113,53 +81,48 @@ const features = computed(() => [
 
         <a-spin :spinning="productStore.loading" size="large">
           <div v-if="productStore.error" class="error-state">
-            <a-result
-              status="error"
-              :title="$t('products.failedToLoad')"
-              :sub-title="productStore.error"
-            >
+            <a-result status="error" :title="$t('products.failedToLoad')" :sub-title="productStore.error">
               <template #extra>
-                <a-button
-                  type="primary"
-                  @click="productStore.fetchProducts()"
-                >
+                <a-button type="primary" @click="productStore.fetchProducts()">
                   {{ $t('products.tryAgain') }}
                 </a-button>
               </template>
             </a-result>
           </div>
 
-          <a-row
-            v-else
-            :gutter="[24, 24]"
-            class="products-grid"
-          >
-            <a-col
-              v-for="product in productStore.products.slice(0, 6)"
-              :key="product.id"
-              :xs="24"
-              :sm="12"
-              :md="12"
-              :lg="8"
-              :xl="8"
-            >
+          <a-row v-else :gutter="[24, 24]" class="products-grid">
+            <a-col v-for="product in productStore.products.slice(0, 6)" :key="product.id" :xs="24" :sm="12" :md="12"
+              :lg="8" :xl="8">
               <ProductCard :product="product" />
             </a-col>
           </a-row>
         </a-spin>
 
         <div class="view-more">
-          <a-button
-            type="primary"
-            size="large"
-            @click="router.push('/products')"
-            class="hover-scale"
-          >
+          <a-button type="primary" size="large" @click="router.push('/products')" class="hover-scale">
             {{ $t('home.viewAllProducts') }}
           </a-button>
         </div>
       </div>
     </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+      <div class="container">
+        <a-row :gutter="[24, 24]">
+          <a-col v-for="(feature, index) in features" :key="index" :xs="24" :sm="12" :lg="6">
+            <a-card class="feature-card hover-lift" :bordered="false">
+              <div class="feature-icon">
+                <component :is="feature.icon" />
+              </div>
+              <h3>{{ feature.title }}</h3>
+              <p>{{ feature.description }}</p>
+            </a-card>
+          </a-col>
+        </a-row>
+      </div>
+    </section>
+
 
     <!-- CTA Section -->
     <section class="cta-section gradient-success">
@@ -167,13 +130,7 @@ const features = computed(() => [
         <div class="cta-content fade-in">
           <h2>{{ $t('home.readyToShop') }}</h2>
           <p>{{ $t('home.readyToShopText') }}</p>
-          <a-button
-            type="primary"
-            size="large"
-            ghost
-            @click="router.push('/register')"
-            class="hover-scale"
-          >
+          <a-button type="primary" size="large" ghost @click="router.push('/register')" class="hover-scale">
             {{ $t('home.createFreeAccount') }}
           </a-button>
         </div>
@@ -292,9 +249,12 @@ const features = computed(() => [
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
+
   50% {
     transform: translateY(-50px) rotate(180deg);
   }

@@ -286,4 +286,11 @@ export default {
     english: 'English',
     changeLanguage: 'Thay đổi ngôn ngữ',
   },
+  footer: {
+    contact: 'Liên hệ',
+    followUs: 'Theo dõi chúng tôi',
+    location: 'Vị trí',
+    viewOnMap: 'Xem trên bản đồ',
+    allRightsReserved: 'Bảo lưu mọi quyền',
+  },
 };

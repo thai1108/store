@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "store-db"
-database_id = "51a76f8b-e24d-4715-a518-8bf5333d0919"
+database_id = "14d1e355-8528-487f-b451-cf977e1c8f40"
 
 # R2 Storage for file uploads (avatars, product images, etc.)
 [[r2_buckets]]
@@ -18,7 +18,7 @@ bucket_name = "store-uploads"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "store-db-production"
-database_id = "59ffd72a-f098-4976-9e41-f68700a6fc6f"
+database_id = "97d57173-be57-426e-a628-7e3caf119ed6"
 
 [[env.production.r2_buckets]]
 binding = "STORAGE"

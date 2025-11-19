@@ -4,6 +4,7 @@ import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth.store";
 import { useCartStore } from "@/stores/cart.store";
 import NavBar from "@/components/NavBar.vue";
+import Footer from "@/components/Footer.vue";
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
@@ -32,6 +33,7 @@ onMounted(async () => {
         </transition>
       </RouterView>
     </main>
+    <Footer />
   </div>
 </template>
 

@@ -21,6 +21,14 @@ const hasVariants = computed(() => {
   return props.product.variants && props.product.variants.length > 0;
 });
 
+// Auto-select first in-stock variant
+if (props.product.variants && props.product.variants.length > 0) {
+  const firstInStockVariant = props.product.variants.find(v => v.stock > 0);
+  if (firstInStockVariant) {
+    selectedVariant.value = firstInStockVariant;
+  }
+}
+
 const displayImages = computed(() => {
   if (props.product.images && props.product.images.length > 0) {
     return props.product.images.map(img => img.imageUrl);
@@ -68,7 +76,7 @@ const addToCart = () => {
     message.warning('Please select a size');
     return;
   }
-  
+
   if (isInStock.value) {
     cartStore.addToCart(props.product, selectedVariant.value || undefined);
     message.success({
@@ -96,23 +104,13 @@ const prevImage = () => {
 </script>
 
 <template>
-  <a-card
-    hoverable
-    class="product-card hover-lift"
-    :class="{ 'out-of-stock-card': !isInStock }"
-  >
+  <a-card hoverable class="product-card hover-lift" :class="{ 'out-of-stock-card': !isInStock }">
     <template #cover>
       <div class="product-image-wrapper">
-        <img
-          v-if="currentImage"
-          :src="currentImage"
-          :alt="product.name"
-          class="product-image"
-          @error="
-            ($event.target as HTMLImageElement).src =
-              'https://via.placeholder.com/300x200?text=No+Image'
-          "
-        />
+        <img v-if="currentImage" :src="currentImage" :alt="product.name" class="product-image" @error="
+          ($event.target as HTMLImageElement).src =
+          'https://via.placeholder.com/300x200?text=No+Image'
+          " />
         <div v-else class="no-image">
           <span class="no-image-icon">📷</span>
           <span>No Image</span>
@@ -123,27 +121,15 @@ const prevImage = () => {
           <button class="image-nav prev" @click.stop="prevImage">‹</button>
           <button class="image-nav next" @click.stop="nextImage">›</button>
           <div class="image-indicators">
-            <span 
-              v-for="(_, idx) in displayImages" 
-              :key="idx" 
-              :class="{ active: idx === currentImageIndex }"
-              @click.stop="currentImageIndex = idx"
-            ></span>
+            <span v-for="(_, idx) in displayImages" :key="idx" :class="{ active: idx === currentImageIndex }"
+              @click.stop="currentImageIndex = idx"></span>
           </div>
         </template>
 
-        <a-tag
-          v-if="!isInStock"
-          color="red"
-          class="stock-badge"
-        >
+        <a-tag v-if="!isInStock" color="red" class="stock-badge">
           {{ $t('products.outOfStock') }}
         </a-tag>
-        <a-tag
-          v-else
-          color="green"
-          class="stock-badge"
-        >
+        <a-tag v-else color="green" class="stock-badge">
           {{ $t('products.inStock') }}
         </a-tag>
       </div>
@@ -160,21 +146,16 @@ const prevImage = () => {
     <div class="product-footer">
       <!-- Variant Selection -->
       <div v-if="hasVariants" class="variants-section">
-        <div class="variants-label">Select Size:</div>
         <div class="variants-buttons">
-          <button
-            v-for="variant in product.variants"
-            :key="variant.id"
-            :class="['variant-btn', { 
-              selected: selectedVariant?.id === variant.id,
-              'out-of-stock': variant.stock <= 0
-            }]"
-            :disabled="variant.stock <= 0"
-            @click="selectVariant(variant)"
-          >
+          <a-button v-for="variant in product.variants" :key="variant.id" size="small" :class="['variant-btn', {
+            selected: selectedVariant?.id === variant.id,
+            'out-of-stock': variant.stock <= 0
+          }]"
+          
+          :disabled="variant.stock <= 0" @click="selectVariant(variant)">
+          
             {{ variant.size }}
-            <span v-if="variant.stock <= 0" class="stock-label">(Out)</span>
-          </button>
+          </a-button>
         </div>
       </div>
 
@@ -185,13 +166,7 @@ const prevImage = () => {
         </a-tag>
       </div>
 
-      <a-button
-        type="primary"
-        :disabled="!isInStock"
-        @click="addToCart"
-        class="add-to-cart-btn"
-        size="large"
-      >
+      <a-button type="primary" :disabled="!isInStock" @click="addToCart" class="add-to-cart-btn" size="large">
         <template #icon>
           <ShoppingCartOutlined />
         </template>
@@ -223,7 +198,7 @@ const prevImage = () => {
 
 .product-image-wrapper {
   position: relative;
-  height: 220px;
+  height: 360px;
   overflow: hidden;
   background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
 }
@@ -357,12 +332,6 @@ const prevImage = () => {
 }
 
 .variant-btn {
-  padding: 6px 14px;
-  border: 2px solid #d9d9d9;
-  background: white;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -374,8 +343,7 @@ const prevImage = () => {
 
 .variant-btn.selected {
   border-color: #1890ff;
-  background: #1890ff;
-  color: white;
+  color: #1890ff;
 }
 
 .variant-btn:disabled {
@@ -439,7 +407,7 @@ const prevImage = () => {
   .add-to-cart-btn {
     font-size: 14px;
   }
-  
+
   .variant-btn {
     font-size: 12px;
     padding: 5px 12px;
