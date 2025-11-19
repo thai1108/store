@@ -3,6 +3,7 @@ import { authService } from '@/services/auth.service';
 import { orderService } from '@/services/order.service';
 import { AuthRequest, RegisterRequest } from '@/types/auth';
 import { createUploadService } from '@/utils/upload';
+import { applyRateLimit, rateLimitConfigs } from '@/utils/rate-limit';
 
 export const userRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -12,6 +13,12 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
   try {
     // POST /api/users/register - Register new user (public)
     if (method === 'POST' && segments.length === 3 && segments[2] === 'register') {
+      // Strict rate limiting cho register
+      const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.strict);
+      if (rateLimitResponse) {
+        return rateLimitResponse;
+      }
+
       const data: RegisterRequest = await request.json();
       const result = await authService.register(env, data);
       
@@ -23,6 +30,12 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
 
     // POST /api/users/login - User login (public)
     if (method === 'POST' && segments.length === 3 && segments[2] === 'login') {
+      // Strict rate limiting cho login
+      const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.strict);
+      if (rateLimitResponse) {
+        return rateLimitResponse;
+      }
+
       const data: AuthRequest = await request.json();
       const result = await authService.login(env, data);
       
@@ -30,6 +43,12 @@ export const userRouter = async (request: Request, env: Environment): Promise<Re
         status: result.success ? 200 : 401,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    // Apply moderate rate limiting cho các authenticated endpoints
+    const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.moderate);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     // GET /api/users/me - Get current user info (authenticated)

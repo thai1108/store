@@ -5,6 +5,7 @@ import { userRepository } from '@/repositories/user.repository';
 import { authenticateRequest, createUnauthorizedResponse } from '@/utils/auth';
 import { CreateProductRequest, UpdateProductRequest } from '@/types/product';
 import { createUploadService } from '@/utils/upload';
+import { applyRateLimit, rateLimitConfigs } from '@/utils/rate-limit';
 
 export const adminRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -12,6 +13,12 @@ export const adminRouter = async (request: Request, env: Environment): Promise<R
   const method = request.method;
 
   try {
+    // Apply admin rate limiting
+    const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.relaxed);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     // Authenticate admin for all admin routes
     const authResult = await authenticateRequest(request, env);
     

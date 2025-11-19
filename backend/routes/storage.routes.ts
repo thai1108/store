@@ -1,6 +1,11 @@
 import { Environment } from '@/types/common';
+import { applyRateLimit, rateLimitConfigs } from '@/utils/rate-limit';
 
 export const storageRouter = async (request: Request, env: Environment): Promise<Response> => {
+  // Apply relaxed rate limiting (1000 requests per minute) for file serving
+  const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.relaxed);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const url = new URL(request.url);
   const segments = url.pathname.split('/').filter(Boolean);
   const method = request.method;

@@ -2,8 +2,13 @@ import { Environment } from '@/types/common';
 import { orderService } from '@/services/order.service';
 import { CreateOrderRequest } from '@/types/order';
 import { authenticateRequest, createUnauthorizedResponse } from '@/utils/auth';
+import { applyRateLimit, rateLimitConfigs } from '@/utils/rate-limit';
 
 export const orderRouter = async (request: Request, env: Environment): Promise<Response> => {
+  // Apply moderate rate limiting (100 requests per minute)
+  const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.moderate);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const url = new URL(request.url);
   const segments = url.pathname.split('/').filter(Boolean);
   const method = request.method;

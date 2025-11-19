@@ -1,6 +1,7 @@
 import { Environment } from '@/types/common';
 import { productService } from '@/services/product.service';
 import { ProductFilter } from '@/types/product';
+import { applyRateLimit, rateLimitConfigs } from '@/utils/rate-limit';
 
 export const productRouter = async (request: Request, env: Environment): Promise<Response> => {
   const url = new URL(request.url);
@@ -8,6 +9,12 @@ export const productRouter = async (request: Request, env: Environment): Promise
   const method = request.method;
 
   try {
+    // Apply rate limiting
+    const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.relaxed);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     // GET /api/products - Get all products with optional filters (public)
     if (method === 'GET' && segments.length === 2) {
       const filter: ProductFilter = {};

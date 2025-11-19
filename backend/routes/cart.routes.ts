@@ -2,8 +2,13 @@ import { Environment } from '@/types/common';
 import { D1CartRepository } from '@/repositories/cart.repository';
 import { CartItem } from '@/types/order';
 import { authenticateRequest, createUnauthorizedResponse } from '@/utils/auth';
+import { applyRateLimit, rateLimitConfigs } from '@/utils/rate-limit';
 
 export const cartRouter = async (request: Request, env: Environment): Promise<Response> => {
+  // Apply moderate rate limiting (100 requests per minute)
+  const rateLimitResponse = await applyRateLimit(request, rateLimitConfigs.relaxed);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const url = new URL(request.url);
   const method = request.method;
 
