@@ -14,9 +14,9 @@ const searchText = ref("");
 
 const categories = computed(() => [
   { value: "", label: t('products.allCategories') },
-  { value: "snack", label: `🍿 ${t('products.categories.snack')}` },
-  { value: "drink", label: `🥤 ${t('products.categories.drink')}` },
-  { value: "milk-tea", label: `🧋 ${t('products.categories.milkTea')}` },
+  { value: "snack", label: t('products.snacks') },
+  { value: "drink", label: t('products.drinks') },
+  { value: "milk-tea", label: t('products.milkTea') },
 ]);
 
 const applyFilters = () => {
@@ -121,7 +121,7 @@ onMounted(() => {
               @click="resetFilters"
             >
               <ReloadOutlined />
-              {{ $t('products.reset') }}
+              {{ $t('common.reset') }}
             </a-button>
           </a-col>
         </a-row>
@@ -130,7 +130,7 @@ onMounted(() => {
 
         <div class="filter-summary">
           <a-tag color="blue" class="result-tag">
-            {{ productCount }} {{ productCount === 1 ? $t('products.product') : $t('products.products') }} {{ $t('products.found') }}
+            {{ productCount }} {{ $t('products.product') }} {{ $t('products.found') }}
           </a-tag>
           <a-tag v-if="selectedCategory" color="purple" closable @close="selectedCategory = ''; applyFilters()">
             {{ categories.find(c => c.value === selectedCategory)?.label }}
@@ -139,14 +139,14 @@ onMounted(() => {
             {{ $t('products.inStockOnly') }}
           </a-tag>
           <a-tag v-if="searchText" color="orange" closable @close="searchText = ''">
-            {{ $t('products.search') }}: "{{ searchText }}"
+            {{ $t('common.search') }}: "{{ searchText }}"
           </a-tag>
         </div>
       </a-card>
 
       <!-- Products Grid -->
       <div class="products-section">
-        <a-spin :spinning="productStore.loading" size="large" :tip="$t('products.loading')">
+        <a-spin :spinning="productStore.loading" size="large" :tip="$t('common.loading')">
           <div v-if="productStore.error" class="error-state">
             <a-result
               status="error"
@@ -163,7 +163,7 @@ onMounted(() => {
 
           <a-empty
             v-else-if="filteredProducts.length === 0 && !productStore.loading"
-            :description="$t('products.noProducts')"
+            :description="$t('products.noProductsFound')"
           >
             <a-button type="primary" @click="resetFilters">
               {{ $t('products.resetFilters') }}

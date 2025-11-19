@@ -205,13 +205,40 @@ const handleSubmit = async () => {
   font-size: 14px;
 }
 
+.login-form :deep(.ant-input),
 .login-form :deep(.ant-input-affix-wrapper) {
-  padding: 12px 16px;
   border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.login-form :deep(.ant-input:focus),
+.login-form :deep(.ant-input-affix-wrapper:focus),
+.login-form :deep(.ant-input-affix-wrapper-focused) {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.login-form :deep(.ant-input-affix-wrapper > input.ant-input) {
+  padding: 12px 16px 12px 0;
+  font-size: 16px;
+}
+
+.login-form :deep(.ant-input-prefix) {
+  margin-right: 12px;
+  margin-left: 16px;
+  color: #8c8c8c;
+  font-size: 16px;
 }
 
 .login-form :deep(.ant-input-password) {
-  padding: 0;
+  border-radius: 8px;
+}
+
+.login-form :deep(.ant-input-password .ant-input) {
+  padding: 12px 16px 12px 0;
+  font-size: 16px;
 }
 
 .form-footer {
@@ -291,12 +318,16 @@ const handleSubmit = async () => {
     padding: 20px 16px;
   }
 
+  .login-container {
+    max-width: 100%;
+  }
+
   .login-card :deep(.ant-card-body) {
-    padding: 32px 24px;
+    padding: 32px 20px;
   }
 
   .login-header h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 
   .login-icon {
@@ -306,9 +337,54 @@ const handleSubmit = async () => {
     margin-bottom: 20px;
   }
 
+  .login-form :deep(.ant-input-affix-wrapper > input.ant-input),
+  .login-form :deep(.ant-input-password .ant-input) {
+    padding: 10px 12px 10px 0;
+    font-size: 14px;
+  }
+
+  .login-form :deep(.ant-input-prefix) {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  .login-button {
+    height: 44px;
+    font-size: 15px;
+  }
+
+  .form-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
   .decoration-left,
   .decoration-right {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-view {
+    padding: 16px 12px;
+  }
+
+  .login-card :deep(.ant-card-body) {
+    padding: 24px 16px;
+  }
+
+  .login-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .register-link,
+  .login-link {
+    font-size: 13px;
   }
 }
 </style>

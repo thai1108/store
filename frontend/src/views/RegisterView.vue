@@ -233,13 +233,40 @@ const handleSubmit = async () => {
   font-size: 14px;
 }
 
+.register-form :deep(.ant-input),
 .register-form :deep(.ant-input-affix-wrapper) {
-  padding: 12px 16px;
   border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.register-form :deep(.ant-input:focus),
+.register-form :deep(.ant-input-affix-wrapper:focus),
+.register-form :deep(.ant-input-affix-wrapper-focused) {
+  border-color: #fa8c16;
+  box-shadow: 0 0 0 2px rgba(250, 140, 22, 0.1);
+}
+
+.register-form :deep(.ant-input-affix-wrapper > input.ant-input) {
+  padding: 12px 16px 12px 0;
+  font-size: 16px;
+}
+
+.register-form :deep(.ant-input-prefix) {
+  margin-right: 12px;
+  margin-left: 16px;
+  color: #8c8c8c;
+  font-size: 16px;
 }
 
 .register-form :deep(.ant-input-password) {
-  padding: 0;
+  border-radius: 8px;
+}
+
+.register-form :deep(.ant-input-password .ant-input) {
+  padding: 12px 16px 12px 0;
+  font-size: 16px;
 }
 
 .register-button {
@@ -304,12 +331,16 @@ const handleSubmit = async () => {
     padding: 20px 16px;
   }
 
+  .register-container {
+    max-width: 100%;
+  }
+
   .register-card :deep(.ant-card-body) {
-    padding: 32px 24px;
+    padding: 32px 20px;
   }
 
   .register-header h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 
   .register-icon {
@@ -319,9 +350,48 @@ const handleSubmit = async () => {
     margin-bottom: 20px;
   }
 
+  .register-form :deep(.ant-input-affix-wrapper > input.ant-input),
+  .register-form :deep(.ant-input-password .ant-input) {
+    padding: 10px 12px 10px 0;
+    font-size: 14px;
+  }
+
+  .register-form :deep(.ant-input-prefix) {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  .register-button {
+    height: 44px;
+    font-size: 15px;
+  }
+
   .decoration-left,
   .decoration-right {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-view {
+    padding: 16px 12px;
+  }
+
+  .register-card :deep(.ant-card-body) {
+    padding: 24px 16px;
+  }
+
+  .register-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .register-link,
+  .login-link {
+    font-size: 13px;
   }
 }
 </style>
