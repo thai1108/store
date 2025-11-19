@@ -13,6 +13,8 @@ export interface Order {
 export interface OrderItem {
   productId: string;
   productName: string;
+  variantId?: string;
+  variantSize?: string;
   quantity: number;
   price: number;
 }
@@ -33,7 +35,11 @@ export interface CustomerInfo {
 }
 
 export interface CreateOrderRequest {
-  items: Omit<OrderItem, 'productName'>[];
+  items: Array<{
+    productId: string;
+    variantId?: string;
+    quantity: number;
+  }>;
   customerInfo: CustomerInfo;
   notes?: string;
   userId?: string;

@@ -36,6 +36,7 @@ export const orderRepository = {
     let totalAmount = 0;
     const enrichedItems = [];
 
+    // ANTI-HACK: Validate tất cả items từ database, không tin tưởng client
     for (const item of data.items) {
       const product = await db
         .select()
@@ -47,11 +48,60 @@ export const orderRepository = {
         throw new Error(`Product with ID ${item.productId} not found`);
       }
 
+      // 2. Kiểm tra product còn hàng không
+      if (!product[0].inStock) {
+        throw new Error(`Product "${product[0].name}" is out of stock`);
+      }
+
+      let finalPrice = product[0].price;
+      let variantId: number | null = null;
+      let variantSize: string | null = null;
+
+      // 3. Nếu có variant, validate và tính giá từ database
+      if (item.variantId) {
+        const variant = await db
+          .select()
+          .from(schema.productVariants)
+          .where(eq(schema.productVariants.id, Number(item.variantId)))
+          .limit(1);
+
+        if (!variant[0]) {
+          throw new Error(`Variant with ID ${item.variantId} not found`);
+        }
+
+        // ANTI-HACK: Kiểm tra variant có thuộc product này không
+        if (variant[0].productId !== product[0].id) {
+          throw new Error(`Variant ${item.variantId} does not belong to product ${item.productId}`);
+        }
+
+        // ANTI-HACK: Kiểm tra stock của variant
+        if (variant[0].stock < item.quantity) {
+          throw new Error(`Variant "${variant[0].size}" only has ${variant[0].stock} items in stock, but ${item.quantity} were requested`);
+        }
+
+        // Tính giá cuối cùng = giá base + price adjustment
+        finalPrice = product[0].price + (variant[0].priceAdjustment || 0);
+        variantId = variant[0].id;
+        variantSize = variant[0].size;
+
+        // 4. Giảm stock của variant
+        await db
+          .update(schema.productVariants)
+          .set({ 
+            stock: variant[0].stock - item.quantity,
+            updatedAt: now,
+          })
+          .where(eq(schema.productVariants.id, variant[0].id));
+      }
+
+      // 5. Tạo order item với giá đã validate từ DB
       const orderItem = {
         productId: Number(item.productId),
         productName: product[0].name,
+        variantId,
+        variantSize,
         quantity: item.quantity,
-        price: product[0].price,
+        price: finalPrice, // GIÁ TỪ DATABASE, KHÔNG PHẢI TỪ CLIENT
       };
 
       enrichedItems.push(orderItem);
@@ -88,8 +138,12 @@ export const orderRepository = {
       ...orderData,
       userId: String(orderData.userId),
       items: enrichedItems.map(item => ({
-        ...item,
         productId: String(item.productId),
+        productName: item.productName,
+        variantId: item.variantId ? String(item.variantId) : undefined,
+        variantSize: item.variantSize || undefined,
+        quantity: item.quantity,
+        price: item.price,
       })),
       customerInfo: data.customerInfo,
       notes: orderData.notes === null ? undefined : orderData.notes,
@@ -122,6 +176,8 @@ export const orderRepository = {
       items: itemsResult.map(item => ({
         productId: String(item.productId),
         productName: item.productName,
+        variantId: item.variantId ? String(item.variantId) : undefined,
+        variantSize: item.variantSize || undefined,
         quantity: item.quantity,
         price: item.price,
       })),
@@ -174,6 +230,8 @@ export const orderRepository = {
           items: items.map(item => ({
             productId: String(item.productId),
             productName: item.productName,
+            variantId: item.variantId ? String(item.variantId) : undefined,
+            variantSize: item.variantSize || undefined,
             quantity: item.quantity,
             price: item.price,
           })),
@@ -239,6 +297,8 @@ export const orderRepository = {
           items: items.map(item => ({
             productId: String(item.productId),
             productName: item.productName,
+            variantId: item.variantId ? String(item.variantId) : undefined,
+            variantSize: item.variantSize || undefined,
             quantity: item.quantity,
             price: item.price,
           })),
