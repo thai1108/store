@@ -83,6 +83,7 @@ export const orderItems = sqliteTable('order_items', {
   variantSize: text('variantSize'),
   quantity: integer('quantity').notNull(),
   price: real('price').notNull(),
+  variantPrice: real('variantPrice'), // Price of variant at order time (for tracking)
 }, (table) => ({
   orderIdIdx: index('idx_order_items_orderid').on(table.orderId),
 }));

@@ -20,6 +20,10 @@ const formatPrice = (price: number) => {
     currency: 'VND',
   }).format(price);
 };
+
+const getTotalPrice = (basePrice: number, priceAdjustment?: number) => {
+  return basePrice + (priceAdjustment || 0);
+};
 </script>
 
 <template>
@@ -32,6 +36,7 @@ const formatPrice = (price: number) => {
           <th>{{ $t('admin.productManagement.productName') }}</th>
           <th>{{ $t('admin.productManagement.category') }}</th>
           <th>{{ $t('admin.productManagement.price') }}</th>
+          <th>{{ $t('admin.productManagement.variants') }}</th>
           <th>{{ $t('products.inStock') }}</th>
           <th>{{ $t('admin.productManagement.actions') }}</th>
         </tr>
@@ -46,6 +51,23 @@ const formatPrice = (price: number) => {
           </td>
           <td>{{ $t(`admin.productManagement.${product.category}`) }}</td>
           <td>{{ formatPrice(product.price) }}</td>
+          <td>
+            <div v-if="product.variants && product.variants.length > 0" class="variants-cell">
+              <div v-for="variant in product.variants" :key="variant.id" class="variant-item">
+                <span class="variant-size">{{ variant.size }}</span>
+                <span class="variant-stock" :class="{ 'low-stock': variant.stock < 10, 'out-of-stock': variant.stock === 0 }">
+                  Stock: {{ variant.stock }}
+                </span>
+                <span class="variant-price">
+                  {{ formatPrice(getTotalPrice(product.price, variant.priceAdjustment)) }}
+                  <span v-if="variant.priceAdjustment" class="price-diff">
+                    (+{{ formatPrice(variant.priceAdjustment) }})
+                  </span>
+                </span>
+              </div>
+            </div>
+            <span v-else class="no-variants">-</span>
+          </td>
           <td>
             <span :class="product.inStock ? 'status-completed' : 'status-cancelled'" class="status-badge">
               {{ product.inStock ? $t('products.inStock') : $t('products.outOfStock') }}
@@ -113,6 +135,63 @@ const formatPrice = (price: number) => {
   height: 40px;
   object-fit: cover;
   border-radius: 4px;
+}
+
+.variants-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 250px;
+}
+
+.variant-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f7fafc;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+}
+
+.variant-size {
+  font-weight: 600;
+  color: #2d3748;
+  padding: 2px 8px;
+  background: #e3f2fd;
+  border-radius: 4px;
+}
+
+.variant-stock {
+  color: #38a169;
+  font-weight: 500;
+}
+
+.variant-stock.low-stock {
+  color: #ed8936;
+}
+
+.variant-stock.out-of-stock {
+  color: #e53e3e;
+  font-weight: 600;
+}
+
+.variant-price {
+  color: #4299e1;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.price-diff {
+  color: #38a169;
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.no-variants {
+  color: #a0aec0;
+  font-style: italic;
 }
 
 .action-buttons {

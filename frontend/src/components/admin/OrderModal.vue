@@ -66,14 +66,21 @@ const handleStatusChange = (orderId: string, event: Event) => {
             <thead>
               <tr>
                 <th>{{ $t('admin.productManagement.productName') }}</th>
+                <th>{{ $t('admin.orderManagement.variant') }}</th>
                 <th>{{ $t('admin.orderManagement.quantity') }}</th>
                 <th>{{ $t('admin.orderManagement.price') }}</th>
                 <th>{{ $t('admin.orderManagement.total') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in order.items" :key="item.productId">
+              <tr v-for="(item, index) in order.items" :key="`${item.productId}-${index}`">
                 <td>{{ item.productName }}</td>
+                <td>
+                  <span v-if="item.variantSize" class="variant-badge">
+                    {{ item.variantSize }}
+                  </span>
+                  <span v-else class="variant-default">-</span>
+                </td>
                 <td>{{ item.quantity }}</td>
                 <td>{{ formatPrice(item.price) }}</td>
                 <td>{{ formatPrice(item.price * item.quantity) }}</td>
@@ -81,7 +88,7 @@ const handleStatusChange = (orderId: string, event: Event) => {
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="3"><strong>{{ $t('admin.orderManagement.total') }}</strong></td>
+                <td colspan="4"><strong>{{ $t('admin.orderManagement.total') }}</strong></td>
                 <td><strong>{{ formatPrice(order.totalAmount) }}</strong></td>
               </tr>
             </tfoot>
@@ -196,6 +203,21 @@ const handleStatusChange = (orderId: string, event: Event) => {
 .items-table tfoot td {
   font-weight: 600;
   border-top: 2px solid #cbd5e0;
+}
+
+.variant-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.variant-default {
+  color: #a0aec0;
+  font-style: italic;
 }
 
 .modal-actions {

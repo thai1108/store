@@ -56,6 +56,7 @@ export const orderRepository = {
       let finalPrice = product[0].price;
       let variantId: number | null = null;
       let variantSize: string | null = null;
+      let variantPrice: number | null = null; // Giá variant riêng (nếu có)
 
       // 3. Nếu có variant, validate và tính giá từ database
       if (item.variantId) {
@@ -81,6 +82,7 @@ export const orderRepository = {
 
         // Tính giá cuối cùng = giá base + price adjustment
         finalPrice = product[0].price + (variant[0].priceAdjustment || 0);
+        variantPrice = variant[0].priceAdjustment || 0; // Lưu giá variant để tracking
         variantId = variant[0].id;
         variantSize = variant[0].size;
 
@@ -100,6 +102,7 @@ export const orderRepository = {
         productName: product[0].name,
         variantId,
         variantSize,
+        variantPrice, // Lưu giá variant riêng để tracking
         quantity: item.quantity,
         price: finalPrice, // GIÁ TỪ DATABASE, KHÔNG PHẢI TỪ CLIENT
       };
@@ -127,12 +130,18 @@ export const orderRepository = {
     if (!orderId || typeof orderId !== 'number' || orderId <= 0) {
       throw new Error('Failed to create order: invalid orderId');
     }
+    
+    console.log('💾 Inserting order items into DB...');
     for (const item of enrichedItems) {
+      console.log('Inserting item:', item);
       await db.insert(schema.orderItems).values({
         orderId,
         ...item,
       });
     }
+    
+    console.log('✅ Order created successfully with ID:', orderId);
+    
     return {
       id: Number(orderId),
       ...orderData,

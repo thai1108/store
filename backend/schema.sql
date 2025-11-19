@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   variantSize TEXT,
   quantity INTEGER NOT NULL,
   price REAL NOT NULL,
+  variantPrice REAL,
   FOREIGN KEY (orderId) REFERENCES orders (id),
   FOREIGN KEY (productId) REFERENCES products (id)
 );

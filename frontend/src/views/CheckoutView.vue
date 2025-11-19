@@ -55,6 +55,7 @@ const handleSubmit = async () => {
     const orderData = {
       items: cartStore.items.map((item) => ({
         productId: item.productId,
+        variantId: item.variantId, // ✅ Gửi variantId
         quantity: item.quantity,
       })),
       customerInfo: {
@@ -195,12 +196,17 @@ if (authStore.isAuthenticated && authStore.user) {
 
             <div class="order-items">
               <div
-                v-for="item in cartStore.items"
-                :key="item.productId"
+                v-for="(item, index) in cartStore.items"
+                :key="`${item.productId}-${item.variantId || 'default'}-${index}`"
                 class="order-item"
               >
                 <div class="item-info">
-                  <h4>{{ item.productName }}</h4>
+                  <h4>
+                    {{ item.productName }}
+                    <span v-if="item.variantSize" class="variant-badge">
+                      {{ item.variantSize }}
+                    </span>
+                  </h4>
                   <p>{{ formatPrice(item.price) }} × {{ item.quantity }}</p>
                 </div>
                 <div class="item-total">
@@ -290,6 +296,17 @@ h1 {
   font-size: 1rem;
   color: #2d3748;
   margin-bottom: 4px;
+}
+
+.variant-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .item-info p {

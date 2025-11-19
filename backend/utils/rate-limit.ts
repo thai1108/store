@@ -18,14 +18,14 @@ interface RateLimitConfig {
 }
 
 // Cleanup expired entries định kỳ
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (now > entry.resetTime) {
-      rateLimitStore.delete(key);
-    }
-  }
-}, 60000); // Cleanup mỗi phút
+// setInterval(() => {
+//   const now = Date.now();
+//   for (const [key, entry] of rateLimitStore.entries()) {
+//     if (now > entry.resetTime) {
+//       rateLimitStore.delete(key);
+//     }
+//   }
+// }, 60000); // Cleanup mỗi phút
 
 /**
  * Get client identifier từ request
