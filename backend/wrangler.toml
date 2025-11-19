@@ -18,7 +18,7 @@ bucket_name = "store-uploads"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "store-db-production"
-database_id = "97d57173-be57-426e-a628-7e3caf119ed6"
+database_id = "99e8807a-f5de-4b6b-82c7-afc8a8ec4402"
 
 [[env.production.r2_buckets]]
 binding = "STORAGE"
