@@ -62,8 +62,8 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 </script>
 
 <template>
-  <div class="cart-view">
-    <div class="container">
+  <div class="cart-view page">
+    <div class="page-container">
       <div class="page-header fade-in">
         <h1>
           <ShoppingCartOutlined />
@@ -222,26 +222,19 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 
 <style scoped>
 .cart-view {
-  padding: 40px 24px 80px;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f0f2f5 0%, #ffffff 100%);
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: var(--space-lg) 0 var(--space-xl);
 }
 
 .page-header {
   text-align: center;
-  margin-bottom: 40px;
-  padding: 40px 20px 20px;
+  margin-bottom: var(--space-md);
+  padding: var(--space-md) 0 var(--space-sm);
 }
 
 .page-header h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #262626;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--text-strong);
   margin: 0;
   display: flex;
   align-items: center;
@@ -250,19 +243,19 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 }
 
 .page-header h1 :deep(.anticon) {
-  color: #1890ff;
+  color: var(--brand-primary);
 }
 
 .empty-cart {
   padding: 80px 24px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .empty-subtitle {
   font-size: 16px;
-  color: #8c8c8c;
+  color: var(--text-muted);
   margin: 16px 0 24px;
 }
 
@@ -272,12 +265,12 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 
 .cart-items-card,
 .summary-card {
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .cart-items-card :deep(.ant-card-head) {
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--border-subtle);
 }
 
 .cart-items-card :deep(.ant-card-head-title) {
@@ -291,7 +284,7 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 }
 
 .cart-item:hover {
-  background: #fafafa;
+  background: rgba(15, 23, 42, 0.02);
   padding-left: 12px;
   padding-right: 12px;
   border-radius: 8px;
@@ -300,7 +293,7 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 .item-title {
   font-size: 18px;
   font-weight: 600;
-  color: #262626;
+  color: var(--text-strong);
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -321,7 +314,7 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 
 .item-price {
   font-size: 14px;
-  color: #8c8c8c;
+  color: var(--text-muted);
 }
 
 .item-quantity-control {
@@ -352,7 +345,7 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 
 .summary-value {
   font-weight: 600;
-  color: #262626;
+  color: var(--text-strong);
 }
 
 .total-section {
@@ -365,20 +358,20 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 .total-label {
   font-size: 18px;
   font-weight: 600;
-  color: #262626;
+  color: var(--text-strong);
 }
 
 .total-value {
   font-size: 24px;
   font-weight: 700;
-  color: #52c41a;
+  color: var(--brand-accent);
 }
 
 .checkout-button {
   height: 48px;
   font-size: 16px;
   font-weight: 600;
-  background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+  background: linear-gradient(135deg, var(--brand-accent) 0%, color-mix(in srgb, var(--brand-accent) 80%, var(--text-strong)) 100%);
   border: none;
   transition: all 0.3s ease;
 }
@@ -397,11 +390,11 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
 
 @media (max-width: 768px) {
   .cart-view {
-    padding: 24px 16px 60px;
+    padding: var(--space-md) 0 var(--space-lg);
   }
 
   .page-header {
-    padding: 20px 0;
+    padding: var(--space-sm) 0;
     margin-bottom: 24px;
   }
 
@@ -411,45 +404,14 @@ const handleRemoveItem = (productId: string, productName: string, variantId?: st
     gap: 8px;
   }
 
-  .empty-cart {
-    padding: 60px 16px;
-  }
-
-  .cart-item {
-    padding: 16px 0;
-  }
-
-  .item-details {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .item-quantity-control {
-    flex: 1;
-  }
-
-  :deep(.ant-list-item-action) {
-    margin-top: 16px;
+  .summary-card {
+    position: static;
   }
 }
 
 @media (max-width: 576px) {
   .page-header h1 {
     font-size: 1.75rem;
-  }
-
-  .total-label {
-    font-size: 16px;
-  }
-
-  .total-value {
-    font-size: 20px;
-  }
-
-  .item-details {
-    flex-direction: column;
-    align-items: flex-start;
   }
 }
 </style>

@@ -111,10 +111,10 @@ const goToProducts = () => router.push('/products');
 </script>
 
 <template>
-  <div class="home-view">
+  <div class="home-view page">
     <!-- Hero Section -->
-    <section class="hero gradient-primary">
-      <div class="container hero-grid">
+    <section class="hero gradient-primary section-block">
+      <div class="page-container hero-grid">
         <div class="hero-content fade-in">
           <div class="eyebrow">TeaStore Experience</div>
           <h1 class="hero-title">{{ $t('home.title') }}</h1>
@@ -190,8 +190,8 @@ const goToProducts = () => router.push('/products');
     </section>
 
     <!-- Featured Products Section -->
-    <section class="collection-highlight">
-      <div class="container">
+    <section class="collection-highlight section-block">
+      <div class="page-container">
         <div class="section-header">
           <h2 class="section-title">{{ $t('home.featuredProducts') }}</h2>
           <p class="section-subtitle">
@@ -219,8 +219,8 @@ const goToProducts = () => router.push('/products');
       </div>
     </section>
 
-    <section class="featured-products">
-      <div class="container">
+    <section class="featured-products section-block">
+      <div class="page-container">
         <div class="section-header">
           <h2 class="section-title">{{ $t('products.title') }}</h2>
           <p class="section-subtitle">{{ $t('products.subtitle') }}</p>
@@ -280,8 +280,8 @@ const goToProducts = () => router.push('/products');
     </section>
 
     <!-- Features Section -->
-    <section class="features-section">
-      <div class="container">
+    <section class="features-section section-block">
+      <div class="page-container">
         <a-row :gutter="[24, 24]">
           <a-col v-for="(feature, index) in features" :key="index" :xs="24" :sm="12" :lg="6">
             <a-card class="feature-card hover-lift" :bordered="false">
@@ -298,8 +298,8 @@ const goToProducts = () => router.push('/products');
 
 
     <!-- CTA Section -->
-    <section class="cta-section gradient-success">
-      <div class="container">
+    <section class="cta-section gradient-success section-block">
+      <div class="page-container">
         <div class="cta-content fade-in">
           <h2>{{ $t('home.readyToShop') }}</h2>
           <p>{{ $t('home.readyToShopText') }}</p>
@@ -314,21 +314,14 @@ const goToProducts = () => router.push('/products');
 
 <style scoped>
 .home-view {
-  min-height: 100vh;
-  color: #0f172a;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
+  color: var(--text-body);
 }
 
 /* Hero Section */
 .hero {
   position: relative;
   padding: 140px 0 100px;
-  color: #0b1a2b;
+  color: var(--text-strong);
   overflow: hidden;
 }
 
@@ -337,7 +330,7 @@ const goToProducts = () => router.push('/products');
   position: absolute;
   inset: 20% -20% auto -20%;
   height: 65%;
-  background: linear-gradient(135deg, rgba(24, 144, 255, 0.15) 0%, rgba(114, 46, 209, 0.15) 50%, rgba(82, 196, 26, 0.14) 100%);
+  background: var(--gradient-hero);
   filter: blur(60px);
   z-index: 0;
 }
@@ -364,7 +357,7 @@ const goToProducts = () => router.push('/products');
   padding: 8px 14px;
   border-radius: 999px;
   background: rgba(24, 144, 255, 0.12);
-  color: #1677ff;
+  color: var(--brand-primary);
   font-weight: 600;
   width: fit-content;
 }
@@ -379,7 +372,7 @@ const goToProducts = () => router.push('/products');
 .hero-subtitle {
   font-size: 1.2rem;
   margin: 0;
-  color: #334155;
+  color: var(--text-body);
   line-height: 1.6;
 }
 
@@ -395,8 +388,8 @@ const goToProducts = () => router.push('/products');
   gap: 8px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--surface);
+  color: var(--text-strong);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
   font-weight: 600;
 }
@@ -422,14 +415,14 @@ const goToProducts = () => router.push('/products');
 }
 
 .secondary-button {
-  background: #0f172a;
-  color: #fff;
+  background: var(--text-strong);
+  color: var(--surface);
   border: none;
 }
 
 .secondary-button:hover {
   background: #111827;
-  color: #fff;
+  color: var(--surface);
 }
 
 .hero-stats {
@@ -440,7 +433,7 @@ const goToProducts = () => router.push('/products');
 }
 
 .stat-card {
-  background: #fff;
+  background: var(--surface);
   padding: 14px 16px;
   border-radius: 12px;
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
@@ -450,11 +443,11 @@ const goToProducts = () => router.push('/products');
 .stat-value {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-strong);
 }
 
 .stat-label {
-  color: #475569;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -492,7 +485,7 @@ const goToProducts = () => router.push('/products');
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.08);
-  color: #0f172a;
+  color: var(--text-strong);
   font-weight: 700;
   font-size: 12px;
 }
@@ -503,12 +496,12 @@ const goToProducts = () => router.push('/products');
 
 .glass-title {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-strong);
   margin-bottom: 4px;
 }
 
 .glass-description {
-  color: #475569;
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 
@@ -581,19 +574,19 @@ const goToProducts = () => router.push('/products');
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .preview-title {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-strong);
 }
 
 .preview-description {
   margin: 0;
-  color: #475569;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
@@ -615,7 +608,7 @@ const goToProducts = () => router.push('/products');
   right: -10px;
   bottom: -10px;
   background: linear-gradient(135deg, #1677ff 0%, #52c41a 100%);
-  color: #fff;
+  color: var(--surface);
   padding: 16px 18px;
   border-radius: 16px;
   width: min(320px, 90%);
@@ -645,12 +638,12 @@ const goToProducts = () => router.push('/products');
 .section-title {
   font-size: 2.4rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-strong);
   margin-bottom: 10px;
 }
 
 .section-subtitle {
-  color: #475569;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -661,7 +654,7 @@ const goToProducts = () => router.push('/products');
 }
 
 .collection-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 18px;
@@ -684,12 +677,12 @@ const goToProducts = () => router.push('/products');
 .collection-content h3 {
   margin: 0 0 6px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-strong);
 }
 
 .collection-content p {
   margin: 0;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 /* Featured Products */
@@ -708,7 +701,7 @@ const goToProducts = () => router.push('/products');
 .error-banner :deep(.ant-alert) {
   border-radius: 14px;
   border: 1px solid #ffe58f;
-  background: #fffbe6;
+  background: var(--surface)be6;
 }
 
 .error-state {
@@ -730,7 +723,7 @@ const goToProducts = () => router.push('/products');
   text-align: center;
   padding: 32px 24px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
@@ -750,12 +743,12 @@ const goToProducts = () => router.push('/products');
 .feature-card h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-strong);
   margin-bottom: 10px;
 }
 
 .feature-card p {
-  color: #475569;
+  color: var(--text-muted);
   line-height: 1.6;
   margin: 0;
 }

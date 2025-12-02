@@ -1,0 +1,165 @@
+:root {
+  --brand-primary: #1677ff;
+  --brand-secondary: #722ed1;
+  --brand-accent: #52c41a;
+  --brand-warm: #fa8c16;
+  --text-strong: #0f172a;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-strong: #0b1a2b;
+  --border-subtle: #e2e8f0;
+  --shadow-soft: 0 16px 60px rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --space-xxl: 96px;
+  --space-xl: 72px;
+  --space-lg: 56px;
+  --space-md: 32px;
+  --space-sm: 20px;
+  --space-xs: 12px;
+  --gradient-primary: linear-gradient(135deg, rgba(22, 119, 255, 0.16), rgba(114, 46, 209, 0.16));
+  --gradient-hero: linear-gradient(135deg, rgba(22, 119, 255, 0.12), rgba(114, 46, 209, 0.12), rgba(82, 196, 26, 0.12));
+  --gradient-cta: linear-gradient(135deg, rgba(82, 196, 26, 0.9), rgba(22, 119, 255, 0.92));
+  --page-bg: radial-gradient(circle at 8% 16%, rgba(24, 144, 255, 0.06), transparent 24%),
+    radial-gradient(circle at 90% 10%, rgba(114, 46, 209, 0.06), transparent 26%),
+    #f8fafc;
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--text-body);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
+  line-height: 1.6;
+}
+
+.page {
+  min-height: 100vh;
+  background: transparent;
+  color: var(--text-body);
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section-block {
+  padding: var(--space-xl) 0;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-strong);
+  margin-bottom: var(--space-xs);
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+}
+
+.surface-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+.surface-ghost {
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.pill.primary {
+  background: rgba(22, 119, 255, 0.12);
+  color: var(--brand-primary);
+}
+
+.pill.neutral {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--text-strong);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-md);
+}
+
+.gradient-surface {
+  background: var(--gradient-primary);
+}
+
+.gradient-hero-surface {
+  background: var(--gradient-hero);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.page-heading {
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.page-heading h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--text-strong);
+}
+
+.page-heading p {
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.page-panel {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0 16px;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+  }
+
+  .section-block {
+    padding: var(--space-lg) 0;
+  }
+
+  .page-heading h1 {
+    font-size: 2rem;
+  }
+}

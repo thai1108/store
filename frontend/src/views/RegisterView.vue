@@ -66,7 +66,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="register-view">
+  <div class="register-view page">
     <div class="register-container">
       <a-card class="register-card fade-in" :bordered="false">
         <div class="register-header">

@@ -4,7 +4,7 @@
 </script>
 
 <template>
-  <div class="placeholder-view">
+  <div class="placeholder-view page">
     <div class="container">
       <h1>{{ $t('products.detailTitle') }}</h1>
       <p>{{ $t('products.underConstruction') }}</p>

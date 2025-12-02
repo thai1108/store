@@ -60,8 +60,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="product-list-view">
-    <div class="container">
+  <div class="product-list-view page">
+    <div class="page-container">
       <!-- Page Header -->
       <div class="page-header fade-in">
         <h1>
@@ -202,26 +202,19 @@ onMounted(() => {
 
 <style scoped>
 .product-list-view {
-  padding: 40px 24px 80px;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f0f2f5 0%, #ffffff 100%);
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: var(--space-lg) 0 var(--space-xl);
 }
 
 .page-header {
   text-align: center;
-  margin-bottom: 40px;
-  padding: 40px 20px 20px;
+  margin-bottom: var(--space-md);
+  padding: var(--space-md) 0 var(--space-sm);
 }
 
 .page-header h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #262626;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--text-strong);
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -230,24 +223,25 @@ onMounted(() => {
 }
 
 .page-header h1 :deep(.anticon) {
-  color: #1890ff;
+  color: var(--brand-primary);
 }
 
 .page-header p {
-  font-size: 1.1rem;
-  color: #8c8c8c;
+  font-size: 1.05rem;
+  color: var(--text-muted);
   margin: 0;
 }
 
 .filters-card {
-  margin-bottom: 32px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: var(--space-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  background: var(--surface);
   animation: fadeInUp 0.6s ease-out 0.2s backwards;
 }
 
 .filters-card :deep(.ant-card-body) {
-  padding: 24px;
+  padding: var(--space-md);
 }
 
 .stock-checkbox {
@@ -267,8 +261,8 @@ onMounted(() => {
   justify-content: center;
   width: 20px;
   height: 20px;
-  background: #52c41a;
-  color: white;
+  background: var(--brand-accent);
+  color: var(--surface);
   border-radius: 4px;
   font-size: 12px;
   font-weight: bold;
@@ -302,11 +296,11 @@ onMounted(() => {
 /* Responsive */
 @media (max-width: 768px) {
   .product-list-view {
-    padding: 24px 16px 60px;
+    padding: var(--space-md) 0 var(--space-lg);
   }
 
   .page-header {
-    padding: 20px 0;
+    padding: var(--space-sm) 0;
     margin-bottom: 24px;
   }
 
@@ -321,7 +315,7 @@ onMounted(() => {
   }
 
   .filters-card :deep(.ant-card-body) {
-    padding: 16px;
+    padding: var(--space-sm);
   }
 
   .filter-summary {
