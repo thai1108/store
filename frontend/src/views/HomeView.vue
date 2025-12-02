@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useProductStore } from "@/stores/product.store";
 import ProductCard from "@/components/ProductCard.vue";
 import { useI18n } from "vue-i18n";
+import { fallbackProducts } from "@/data/fallbackProducts";
 import {
   ShoppingOutlined,
   RocketOutlined,
@@ -48,8 +49,14 @@ const heroStats = computed(() => [
   { label: t('home.features.support247'), value: '24/7' },
 ]);
 
+const displayProducts = computed(() =>
+  productStore.products.length ? productStore.products : fallbackProducts
+);
+
+const gridProducts = computed(() => displayProducts.value.slice(0, 6));
+
 const featuredProduct = computed(() => {
-  const products = productStore.products;
+  const products = displayProducts.value;
   if (!products || products.length === 0) return null;
 
   const withImage = products.find(
@@ -220,8 +227,41 @@ const goToProducts = () => router.push('/products');
         </div>
 
         <a-spin :spinning="productStore.loading" size="large">
-          <div v-if="productStore.error" class="error-state">
-            <a-result status="error" :title="$t('products.failedToLoad')" :sub-title="productStore.error">
+          <div v-if="productStore.error" class="error-banner">
+            <a-alert
+              type="warning"
+              show-icon
+              :message="$t('products.failedToLoad')"
+              :description="productStore.error + ' — ' + $t('home.featuredProductsSubtitle')"
+            >
+              <template #action>
+                <a-button size="small" @click="productStore.fetchProducts()">
+                  {{ $t('products.tryAgain') }}
+                </a-button>
+              </template>
+            </a-alert>
+          </div>
+
+          <a-row v-if="gridProducts.length" :gutter="[24, 24]" class="products-grid">
+            <a-col
+              v-for="product in gridProducts"
+              :key="product.id"
+              :xs="24"
+              :sm="12"
+              :md="12"
+              :lg="8"
+              :xl="8"
+            >
+              <ProductCard :product="product" />
+            </a-col>
+          </a-row>
+
+          <div v-else class="error-state">
+            <a-result
+              status="error"
+              :title="$t('products.failedToLoad')"
+              :sub-title="productStore.error || $t('home.featuredProductsSubtitle')"
+            >
               <template #extra>
                 <a-button type="primary" @click="productStore.fetchProducts()">
                   {{ $t('products.tryAgain') }}
@@ -229,13 +269,6 @@ const goToProducts = () => router.push('/products');
               </template>
             </a-result>
           </div>
-
-          <a-row v-else :gutter="[24, 24]" class="products-grid">
-            <a-col v-for="product in productStore.products.slice(0, 6)" :key="product.id" :xs="24" :sm="12" :md="12"
-              :lg="8" :xl="8">
-              <ProductCard :product="product" />
-            </a-col>
-          </a-row>
         </a-spin>
 
         <div class="view-more">
@@ -666,6 +699,16 @@ const goToProducts = () => router.push('/products');
 
 .products-grid {
   margin-bottom: 36px;
+}
+
+.error-banner {
+  margin-bottom: 18px;
+}
+
+.error-banner :deep(.ant-alert) {
+  border-radius: 14px;
+  border: 1px solid #ffe58f;
+  background: #fffbe6;
 }
 
 .error-state {
