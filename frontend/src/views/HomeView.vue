@@ -48,6 +48,37 @@ const heroStats = computed(() => [
   { label: t('home.features.support247'), value: '24/7' },
 ]);
 
+const featuredProduct = computed(() => {
+  const products = productStore.products;
+  if (!products || products.length === 0) return null;
+
+  const withImage = products.find(
+    product => Boolean(product.imageUrl) || Boolean(product.images?.length)
+  );
+
+  return withImage || products[0];
+});
+
+const featuredImage = computed(() => {
+  if (!featuredProduct.value) return '';
+
+  if (featuredProduct.value.images?.length) {
+    return featuredProduct.value.images[0].imageUrl;
+  }
+
+  return featuredProduct.value.imageUrl || '';
+});
+
+const featuredPrice = computed(() => {
+  if (!featuredProduct.value) return '';
+
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0,
+  }).format(featuredProduct.value.price);
+});
+
 const collectionCards = computed(() => [
   {
     title: t('products.drinks'),
@@ -111,17 +142,35 @@ const goToProducts = () => router.push('/products');
           <div class="glass-card">
             <div class="glass-header">
               <span class="dot" v-for="n in 3" :key="n"></span>
+              <span class="header-pill">Live preview</span>
             </div>
             <div class="glass-body">
               <p class="glass-title">{{ $t('home.featuredProducts') }}</p>
               <p class="glass-description">{{ $t('home.featuredProductsSubtitle') }}</p>
-              <div class="glass-tags">
-                <span class="glass-tag">{{ $t('products.drinks') }}</span>
-                <span class="glass-tag">{{ $t('products.milkTea') }}</span>
-                <span class="glass-tag">{{ $t('products.snacks') }}</span>
-              </div>
-              <div class="glass-cta">
-                <a-button type="primary" ghost block @click="goToProducts">{{ $t('home.viewAllProducts') }}</a-button>
+              <div class="preview-card">
+                <div class="preview-image" :class="{ empty: !featuredImage }">
+                  <img
+                    v-if="featuredImage"
+                    :src="featuredImage"
+                    :alt="featuredProduct?.name || $t('home.featuredProducts')"
+                    @error="($event.target as HTMLImageElement).src = 'https://via.placeholder.com/320x200?text=Product'"
+                  />
+                  <div v-else class="preview-placeholder">🧋</div>
+                  <span class="image-badge">{{ $t('home.features.fastDelivery') }}</span>
+                </div>
+                <div class="preview-details">
+                  <p class="preview-label">{{ $t('home.featuredProducts') }}</p>
+                  <h3 class="preview-title">{{ featuredProduct?.name || $t('home.viewAllProducts') }}</h3>
+                  <p class="preview-description">
+                    {{ featuredProduct?.description || $t('home.featuredProductsSubtitle') }}
+                  </p>
+                  <div class="preview-meta">
+                    <span class="preview-price" v-if="featuredPrice">{{ featuredPrice }}</span>
+                    <a-button type="primary" size="small" ghost @click="goToProducts" class="hover-scale">
+                      {{ $t('home.viewAllProducts') }}
+                    </a-button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -405,6 +454,16 @@ const goToProducts = () => router.push('/products');
   background: #1677ff;
 }
 
+.header-pill {
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 12px;
+}
+
 .glass-body {
   padding: 18px 20px 22px;
 }
@@ -427,16 +486,95 @@ const goToProducts = () => router.push('/products');
   margin-bottom: 12px;
 }
 
-.glass-tag {
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: #f0f5ff;
-  color: #1d4ed8;
-  font-weight: 600;
+.preview-card {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.08), rgba(82, 196, 26, 0.08));
+  border: 1px solid rgba(15, 23, 42, 0.05);
 }
 
-.glass-cta :deep(.ant-btn) {
-  border-radius: 10px;
+.preview-image {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f0f5ff;
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+}
+
+.preview-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preview-image.empty {
+  background: linear-gradient(135deg, rgba(22, 119, 255, 0.08), rgba(114, 46, 209, 0.08));
+}
+
+.preview-placeholder {
+  font-size: 48px;
+  opacity: 0.8;
+}
+
+.image-badge {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.24);
+}
+
+.preview-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preview-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+}
+
+.preview-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.preview-description {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.preview-price {
+  font-weight: 800;
+  color: #1677ff;
+  font-size: 1.1rem;
 }
 
 .hero-float-card {
@@ -633,6 +771,10 @@ const goToProducts = () => router.push('/products');
 
   .hero-visual {
     order: -1;
+  }
+
+  .preview-card {
+    grid-template-columns: 1fr;
   }
 }
 
