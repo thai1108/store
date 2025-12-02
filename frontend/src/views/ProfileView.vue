@@ -138,7 +138,7 @@ const userRole = computed(() => {
 </script>
 
 <template>
-  <div class="profile-view">
+  <div class="profile-view page">
     <div class="container">
       <div class="profile-header">
         <h1>{{ $t('profile.title') }}</h1>

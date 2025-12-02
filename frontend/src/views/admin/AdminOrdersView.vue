@@ -43,7 +43,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="admin-orders-view">
+  <div class="admin-orders-view page">
     <div class="section-header">
       <h2>{{ $t('admin.orderManagement.title') }}</h2>
     </div>

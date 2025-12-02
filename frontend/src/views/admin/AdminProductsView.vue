@@ -64,7 +64,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="admin-products-view">
+  <div class="admin-products-view page">
     <div class="section-header">
       <h2>{{ $t('admin.productManagement.title') }}</h2>
       <button class="btn btn-primary" @click="openAddModal">

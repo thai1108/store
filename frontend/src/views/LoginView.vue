@@ -55,7 +55,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="login-view">
+  <div class="login-view page">
     <div class="login-container">
       <a-card class="login-card fade-in" :bordered="false">
         <div class="login-header">

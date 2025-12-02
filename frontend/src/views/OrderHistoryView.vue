@@ -102,7 +102,7 @@ const sortedOrders = computed(() => {
 </script>
 
 <template>
-  <div class="order-history-view">
+  <div class="order-history-view page">
     <div class="container">
       <div class="page-header">
         <h1>{{ $t('orders.title') }}</h1>

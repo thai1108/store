@@ -12,7 +12,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="admin-users-view">
+  <div class="admin-users-view page">
     <div class="section-header">
       <h2>{{ $t('admin.userManagement.title') }}</h2>
     </div>

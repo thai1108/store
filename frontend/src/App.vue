@@ -24,28 +24,80 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div id="app">
+  <div id="app" class="app-shell page">
+    <div class="background-ornaments">
+      <div class="orb orb-primary"></div>
+      <div class="orb orb-secondary"></div>
+      <div class="orb orb-tertiary"></div>
+    </div>
+
     <NavBar />
-    <main>
+
+    <main class="app-main">
       <RouterView v-slot="{ Component }">
         <transition name="page" mode="out-in">
           <component :is="Component" />
         </transition>
       </RouterView>
     </main>
+
     <Footer />
   </div>
 </template>
 
 <style>
 #app {
-  min-height: 100vh;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, "Open Sans", sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  background: var(--page-bg);
 }
 
-main {
-  padding-top: 64px; /* Space for fixed navbar */
+.app-shell {
+  position: relative;
+}
+
+.background-ornaments {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  filter: blur(60px);
+  opacity: 0.5;
+  border-radius: 50%;
+  transform: translateZ(0);
+}
+
+.orb-primary {
+  width: 320px;
+  height: 320px;
+  top: 140px;
+  left: -80px;
+  background: color-mix(in srgb, var(--brand-primary) 35%, transparent);
+}
+
+.orb-secondary {
+  width: 260px;
+  height: 260px;
+  right: -120px;
+  top: 300px;
+  background: color-mix(in srgb, var(--brand-warm) 25%, transparent);
+}
+
+.orb-tertiary {
+  width: 200px;
+  height: 200px;
+  bottom: 80px;
+  left: 20%;
+  background: color-mix(in srgb, var(--brand-accent) 28%, transparent);
+}
+
+.app-main {
+  position: relative;
+  z-index: 1;
+  padding-top: 72px; /* Space for fixed navbar */
 }
 </style>

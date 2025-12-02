@@ -99,8 +99,8 @@ if (authStore.isAuthenticated && authStore.user) {
 </script>
 
 <template>
-  <div class="checkout-view">
-    <div class="container">
+  <div class="checkout-view page">
+    <div class="page-container">
       <h1>{{ $t('checkout.title') }}</h1>
 
       <div v-if="success" class="alert alert-success">
@@ -241,35 +241,36 @@ if (authStore.isAuthenticated && authStore.user) {
 
 <style scoped>
 .checkout-view {
-  padding: 40px 20px;
-  min-height: 100vh;
-  background-color: #f7fafc;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: var(--space-lg) 0 var(--space-xl);
 }
 
 h1 {
   text-align: center;
-  font-size: 2.5rem;
-  color: #2d3748;
-  margin-bottom: 40px;
+  font-size: 2.4rem;
+  color: var(--text-strong);
+  margin-bottom: var(--space-md);
 }
 
 .checkout-content {
   display: grid;
   grid-template-columns: 1fr 400px;
-  gap: 40px;
+  gap: var(--space-md);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md);
+  border: 1px solid var(--border-subtle);
 }
 
 .card h2 {
   font-size: 1.5rem;
-  color: #2d3748;
-  margin-bottom: 24px;
+  color: var(--text-strong);
+  margin-bottom: var(--space-sm);
   padding-bottom: 12px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .required {
@@ -277,7 +278,7 @@ h1 {
 }
 
 .order-items {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-sm);
 }
 
 .order-item {
@@ -285,7 +286,8 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: 16px 0;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 12px;
 }
 
 .order-item:last-child {
@@ -294,7 +296,7 @@ h1 {
 
 .item-info h4 {
   font-size: 1rem;
-  color: #2d3748;
+  color: var(--text-strong);
   margin-bottom: 4px;
 }
 
@@ -302,62 +304,120 @@ h1 {
   display: inline-block;
   margin-left: 8px;
   padding: 2px 8px;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: rgba(22, 119, 255, 0.1);
+  color: var(--brand-primary);
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: 500;
 }
 
 .item-info p {
-  color: #718096;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 .item-total {
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-strong);
 }
 
-.order-total {
-  border-top: 1px solid #e2e8f0;
-  padding-top: 16px;
+.form-group {
+  margin-bottom: var(--space-sm);
 }
 
-.total-row {
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.form-control,
+textarea.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  background: var(--surface);
+  color: var(--text-strong);
+}
+
+.alert {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.alert-success {
+  background: rgba(82, 196, 26, 0.12);
+  color: var(--brand-accent);
+  border: 1px solid color-mix(in srgb, var(--brand-accent) 50%, transparent);
+}
+
+.alert-error {
+  background: rgba(255, 77, 79, 0.12);
+  color: #d4380d;
+  border: 1px solid rgba(255, 77, 79, 0.3);
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: var(--space-sm);
+}
+
+.btn-primary {
+  background: var(--brand-primary);
+  color: var(--surface);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--brand-primary);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--brand-primary);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.summary-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.summary-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 12px;
-  color: #4a5568;
 }
 
-.final-total {
+.summary-row.total {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #2d3748;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 12px;
-  margin-top: 12px;
+  color: var(--brand-accent);
 }
 
-.payment-note {
-  background-color: #f7fafc;
-  padding: 16px;
-  border-radius: 8px;
-  margin-top: 24px;
-}
-
-.payment-note p {
-  margin-bottom: 8px;
-}
-
-.payment-note p:last-child {
-  margin-bottom: 0;
+@media (max-width: 992px) {
+  .checkout-content {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-  .checkout-content {
-    grid-template-columns: 1fr;
+  h1 {
+    font-size: 2rem;
+  }
+
+  .card {
+    padding: var(--space-sm);
   }
 }
 </style>
